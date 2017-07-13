@@ -138,7 +138,7 @@ public class CurveTest {
 		// 1,000 iterations:
 		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
 		uIn = crv.decodeUCoordinate(crv.toByteArray(uInString), 255);
-		for (int i = 1; i < 05; i++) {
+		for (int i = 1; i <= 1000; i++) {
 			uOut = crv.x25519(scalar, uIn, 255);
 			crv.out(uOut, (i) + ":");
 			String s = crv.asLittleEndianHexString(scalar);
@@ -148,7 +148,7 @@ public class CurveTest {
 			scalar = crv.decodeScalar25519(crv.toByteArray(u));
 			//scalar = uOut;
 		}
-		assertEquals(uOutString1, crv.asLittleEndianHexString(uOut));
+		assertEquals(uOutString1000, crv.asLittleEndianHexString(scalar));
 	}
 
 	/**
