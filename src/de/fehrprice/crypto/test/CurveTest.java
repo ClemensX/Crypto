@@ -145,7 +145,20 @@ public class CurveTest {
 			scalarString = crv.asLittleEndianHexString(uOut);
 			scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
 		}
-		assertEquals(uOutString1000, crv.asLittleEndianHexString(scalar));
+		assertEquals(uOutString1000, scalarString);
+		
+		// 1,000,000 iterations:
+		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+		uIn = crv.decodeUCoordinate(crv.toByteArray(uInString), 255);
+		for (int i = 1; i <= 1000000; i++) {
+			uOut = crv.x25519(scalar, uIn, 255);
+			if(i % 1000 == 0)
+			  crv.out(uOut, (i) + ":");
+			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarString), 255);
+			scalarString = crv.asLittleEndianHexString(uOut);
+			scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+		}
+		assertEquals(uOutString1Mio, scalarString);
 	}
 
 	/**
