@@ -121,10 +121,11 @@ public class CurveTest {
 	@Test
 	public void TestVectorsMulti() {
 		BigInteger scalar, uIn, uOut;
-		String scalarString, uInString, uOutString1, uOutString1000, uOutString1Mio;
+		String uOutString1, uOutString1000, uOutString1Mio;
+		String scalarStringIntermediate = null;
 
-		scalarString   = "0900000000000000000000000000000000000000000000000000000000000000";
-		uInString      = "0900000000000000000000000000000000000000000000000000000000000000";
+		final String scalarString = "0900000000000000000000000000000000000000000000000000000000000000";
+		final String uInString    = "0900000000000000000000000000000000000000000000000000000000000000";
 		uOutString1    = "422c8e7a6227d7bca1350b3e2bb7279f7897b87bb6854b783c60e80311ae3079";
 		uOutString1000 = "684cf59ba83309552800ef566f2f4d3c1c3887c49360e3875f2eb94d99532c51";
 		uOutString1Mio = "7c3911e0ab2586fd864497297e575e6f3bc601c0883c30df5f4dd2d24f665424";
@@ -137,28 +138,43 @@ public class CurveTest {
 		
 		// 1,000 iterations:
 		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+		scalarStringIntermediate = scalarString;
 		uIn = crv.decodeUCoordinate(crv.toByteArray(uInString), 255);
 		for (int i = 1; i <= 1000; i++) {
 			uOut = crv.x25519(scalar, uIn, 255);
 			//crv.out(uOut, (i) + ":");
-			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarString), 255);
-			scalarString = crv.asLittleEndianHexString(uOut);
-			scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarStringIntermediate), 255);
+			scalarStringIntermediate = crv.asLittleEndianHexString(uOut);
+			scalar = crv.decodeScalar25519(crv.toByteArray(scalarStringIntermediate));
 		}
-		assertEquals(uOutString1000, scalarString);
+		assertEquals(uOutString1000, scalarStringIntermediate);
 		
 		// 1,000,000 iterations:
 		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+		scalarStringIntermediate = scalarString;
 		uIn = crv.decodeUCoordinate(crv.toByteArray(uInString), 255);
 		for (int i = 1; i <= 1000000; i++) {
 			uOut = crv.x25519(scalar, uIn, 255);
 			if(i % 1000 == 0)
 			  crv.out(uOut, (i) + ":");
-			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarString), 255);
-			scalarString = crv.asLittleEndianHexString(uOut);
-			scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarStringIntermediate), 255);
+			scalarStringIntermediate = crv.asLittleEndianHexString(uOut);
+			scalar = crv.decodeScalar25519(crv.toByteArray(scalarStringIntermediate));
 		}
-		assertEquals(uOutString1Mio, scalarString);
+		assertEquals(uOutString1Mio, scalarStringIntermediate);
+		
+//		// 1,000,000 iterations:
+//		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+//		uIn = crv.decodeUCoordinate(crv.toByteArray(uInString), 255);
+//		for (int i = 1; i <= 1000000; i++) {
+//			uOut = crv.x25519(scalar, uIn, 255);
+//			if(i % 1000 == 0)
+//			  crv.out(uOut, (i) + ":");
+//			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarString), 255);
+//			scalarString = crv.asLittleEndianHexString(uOut);
+//			scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+//		}
+//		assertEquals(uOutString1Mio, scalarString);
 	}
 
 	/**
