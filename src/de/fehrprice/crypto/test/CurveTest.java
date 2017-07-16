@@ -1,6 +1,7 @@
 package de.fehrprice.crypto.test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 
 import java.math.BigInteger;
 
@@ -8,20 +9,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import de.fehrprice.crypto.AES;
 import de.fehrprice.crypto.Curve25519;
-import de.fehrprice.crypto.RSA;
 
 public class CurveTest {
 	
-	AES aes;
-	RSA rsa;
+    public static boolean disableLongRunningTest = true;
+	
 	Curve25519 crv;
-
+	
 	@Before
 	public void setUp() throws Exception {
-		aes = new AES();
-		rsa = new RSA();
 		crv = new Curve25519();
 	}
 
@@ -149,6 +146,7 @@ public class CurveTest {
 		}
 		assertEquals(uOutString1000, scalarStringIntermediate);
 		
+		if (disableLongRunningTest) return;
 		// 1,000,000 iterations:
 		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
 		scalarStringIntermediate = scalarString;
