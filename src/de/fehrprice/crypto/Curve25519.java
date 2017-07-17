@@ -1,5 +1,7 @@
 package de.fehrprice.crypto;
 
+import static org.junit.Assert.assertEquals;
+
 import java.math.BigInteger;
 
 /**
@@ -250,6 +252,22 @@ public class Curve25519 {
 		byte[] v = {(byte) 255, (byte)255};
 		b = new BigInteger(1, v);
 		System.out.println(" "+ b + " " + asString(b.toByteArray()) );
+	}
+
+
+	/**
+	 * String parameter based curve25519 implementation
+	 * Prepare BigIntegers as needed by decoding String parameters,
+	 * then call the BigInteger implementation  
+	 * @param scalarString
+	 * @param uInString
+	 * @return
+	 */
+	public String x25519(String scalarString, String uInString) {
+		BigInteger scalar = decodeScalar25519(toByteArray(scalarString));
+		BigInteger uIn = decodeUCoordinate(toByteArray(uInString), 255);
+		BigInteger uOut = x25519(scalar, uIn, 255);
+		return asLittleEndianHexString(uOut);
 	}
 
 }
