@@ -11,7 +11,21 @@ import de.fehrprice.crypto.RSA;
 
 public class Speed {
 
-	int conf[][] = {
+	// indicate use of big keys that will slow test execution considerably
+	// use for final tests, not during development
+	private static final boolean USE_LARGE_KEY_TESTS = false;
+
+	private int conf_small_keys[][] = {
+			{ 32, 100},
+			{ 64, 100},
+			{ 128, 100},
+			{ 256, 100},
+			{ 512, 50},
+			{ 1024, 10},
+			{ 2048, 1}
+	};
+
+	private int conf_large_keys[][] = {
 			{ 32, 100},
 			{ 64, 100},
 			{ 128, 100},
@@ -42,6 +56,8 @@ public class Speed {
 	
 	@Test
 	public final void test() {
+		int conf[][];
+		conf = USE_LARGE_KEY_TESTS ? conf_large_keys : conf_small_keys; 
 		// warm up JIT:
 		for (int i = 0; i < 50; i++) {
 			RSA rsa = new RSA();
