@@ -1,5 +1,17 @@
 package de.fehrprice.crypto.test;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+import javax.json.JsonReader;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -58,11 +70,35 @@ public class JWTTest {
 
 	@Test
 	public void test() {
+		// ROLES testing
 		String decodeHeader = JWT.getDecoder(token).decodeHeader();
-		System.out.println("Decoded Header: " + decodeHeader);
+		//System.out.println("Decoded Header: " + decodeHeader);
 		String decodePayload = JWT.getDecoder(token).decodePayload();
-		System.out.println("Decoded Payload: " + decodePayload);
+		//System.out.println("Decoded Payload: " + decodePayload);
 		//fail("Not yet implemented");
+		JsonReader reader = Json.createReader(new StringReader(decodePayload));
+		JsonObject jobj = reader.readObject();
+		//System.out.println(jobj);
+		JsonArray scopes = jobj.getJsonArray("scope");
+		//System.out.println(scopes);
+		String[] roles = new String[scopes.size()];
+		for (int i = 0; i < scopes.size(); i++) {
+			roles[i] = scopes.getString(i);
+		}
+		for (String s : roles)
+			System.out.println(s);
+		// get roles as list:
+		List<String> rolesList = Arrays.asList(roles);
+		assertTrue(rolesList.contains("rbs_regservice_backend!t762.Delete"));
+		assertTrue(rolesList.contains("rbs_regservice_backend!t762.Display"));
+		assertTrue(rolesList.contains("rbs_regservice_backend!t762.Edit"));
+		
+		// USER name and email testing
+		String username = jobj.getString("user_name");
+		assertEquals("clemensfehr@gmx.de", username);
+		
+		String email = jobj.getString("email");
+		assertEquals("clemensfehr@gmx.de", email);
 	}
 
 }
