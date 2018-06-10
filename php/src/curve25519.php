@@ -33,6 +33,11 @@ final class Curve25519
      */
     public function toByteArray(string $hexString): array
     {
+        // make string 64 chars by prepending '0'
+        while(strlen($hexString) < 64) {
+            $hexString = "0".$hexString;
+        }
+        
         // split hex string up to bytes (2 hex digits -> one byte)
         $a = str_split(pack("H*", $hexString));
         foreach ($a as &$v) {
@@ -47,6 +52,12 @@ final class Curve25519
         }
         return $a;
     }
+
+    public function toByteArrayLittleEndian(string $hexString): array
+    {
+        return array_reverse($this->toByteArray($hexString));
+    }
+    
 }
 
 $c = new Curve25519();

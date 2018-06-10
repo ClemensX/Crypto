@@ -39,10 +39,16 @@ final class CurveTest extends TestCase
         $this->assertEquals(32, count($ar1));
         $this->assertEquals(0xa5, $ar1[0]);
         $this->assertEquals(0xc4, $ar1[31]);
-        //$this->assertEquals(32, strlen($ar1));
-        // assertEquals(32, ar1.length);
-        // assertEquals((byte)0xa5, ar1[0]);
-        // assertEquals((byte)0xc4, ar1[31]);
+        try {
+            $ar1 = $crv->toByteArray("");
+            $this->assertEquals(32, count($ar1));
+            //var_dump($ar1);
+        } catch (Exception $e) {
+            //echo $e;
+        }
+        $ar2 = $crv->toByteArrayLittleEndian($scalar1);
+        $this->assertEquals(0xc4, $ar2[0]);
+        $this->assertEquals(0xa6, $ar2[31]);
     }
     
     // public function testCannotBeCreatedFromInvalidEmailAddress(): void
