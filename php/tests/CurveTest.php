@@ -48,7 +48,15 @@ final class CurveTest extends TestCase
         }
         $ar2 = $crv->toByteArrayLittleEndian($scalar1);
         $this->assertEquals(0xc4, $ar2[0]);
-        $this->assertEquals(0xa6, $ar2[31]);
+        $this->assertEquals(0xa5, $ar2[31]);
+
+        $bigScalarAsNumber = "31029842492115040904895560451863089656472772604678260265531221036453811406496";
+        $big1 = $crv->decodeLittleEndian($ar2, 255);
+        $this->assertNotEquals($bigScalarAsNumber,$big1);
+
+		$scalarCorrected = "a046e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449a44";
+        $big1 = $crv->decodeLittleEndian($crv->toByteArray($scalarCorrected), 255);
+        $this->assertEquals($bigScalarAsNumber,$big1);
     }
     
     // public function testCannotBeCreatedFromInvalidEmailAddress(): void

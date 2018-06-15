@@ -58,9 +58,34 @@ final class Curve25519
         return array_reverse($this->toByteArray($hexString));
     }
     
+    /**
+     *
+     * python code:def decodeLittleEndian(b, bits):
+     *  return sum([b[i] << 8*i for i in range((bits+7)/8)])
+     *
+     * @param b
+     * @param bits
+     * @return
+     */
+    public function decodeLittleEndian( array $b, int $bits): string {
+    	if(count($b) != 32) {
+    		throw new Exception(' arrays for curve have to be 32 bytes: '.count($b));
+    	}
+    	$big = "0";
+    	$range = intdiv(($bits+7), 8);  // yields 32 bytes for curve25519
+    	//echo "Range ".$range."\n";
+    	$factor = "1";//BigInteger.ONE;
+    	for($i = 0; $i < $range; $i++) {
+    		$v = ($b[$i]) & 0xff;
+    		$byteVal = bcadd("0", strval($v));//BigInteger.valueOf(v);
+    		$byteVal = bcmul($byteVal, $factor);
+    		$big = bcadd($big, $byteVal);
+    		$factor = bcmul($factor, "256");
+    	}
+    	//echo " big = ".$big."\n";
+    	return $big;
+    }
 }
 
-$c = new Curve25519();
-print($c);
-//	echo "xxx".$c."\n";
-//	echo "yyy".Curve25519::$p;
+// $c = new Curve25519();
+// print($c);
