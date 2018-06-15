@@ -27,6 +27,27 @@ final class Curve25519
     }
     
     /**
+     * Decode scalar by masking highest bit and lowest 3 bits,
+     * then set 2nd highest bit
+     * Input scalar has to be a 32 byte value, IllegalArgumentException thrown if not
+     * @param b
+     * @return
+     */
+    public function decodeScalar25519(array $cloned) : string {
+    	if(count($cloned) != 32) {
+    		throw new Exception(' arrays for curve have to be 32 bytes: '.count($b));
+    	}
+    	// we can savely work on $b, it is a copy already...
+    	// clear lowest bit
+    	$cloned[0] = (($cloned[0]) & 248);
+    	// clear highest bit
+    	$cloned[31] = (($cloned[31]) & 127);
+    	// set 2nd highest bit:
+    	$cloned[31] = (($cloned[31]) | 64);
+    	return $this->decodeLittleEndian($cloned, 255);
+    }
+    
+    /**
      * Convert Hex String FA01EE... to int array 0xfa,0x01,0xee
      * Hex byte arrays are strings in PHP.
      * @return string
@@ -84,6 +105,89 @@ final class Curve25519
     	}
     	//echo " big = ".$big."\n";
     	return $big;
+    }
+
+    public function asString(array $b): string {
+    	if(count($b) != 32) {
+    		throw new Exception(' arrays for curve have to be 32 bytes: '.count($b));
+    	}
+    	$buf = "";
+    	for ($i = 0; $i < 32; $i++) {
+    		$h = dechex($b[$i]);
+    		if (strlen($h) < 2) {
+    			$h = '0'.$h;
+    		}
+    		$buf = $buf.$h;
+    	}
+    	return $buf;
+    }
+/*    
+	public String toString(byte[] bytes) {
+		StringBuffer buf = new StringBuffer();
+		for (int i = 0; i < bytes.length; i++) {
+			buf.append(String.format("%02x", bytes[i]));
+		}
+		return buf.toString();
+	}
+
+*/
+    public function decodeUCoordinate(array $cloned, int $bits): string {
+    	if(count($cloned) != 32) {
+    		throw new Exception(' arrays for curve have to be 32 bytes: '.count($cloned));
+    	}
+    	// we can savely work on $b, it is a copy already...
+    	// clear highest bit
+    	$cloned[31] = (($cloned[31]) & 0x7f);
+    	return $this->decodeLittleEndian($cloned, $bits);
+    	
+    }
+
+    public function encodeUCoordinate(string $u, int $bits):string {
+    	$u = bcmod($u, self::$p);
+    	$v = self::bcdechex($u);//u.toString(16);
+    	if (strlen($v) != 64) {
+    		throw new Exception(' bcmath number too long: '.$v);
+    	}
+    	return $v;
+    }
+
+    public function x25519( string $k, string $u, int $bits): string {
+    	return "1";
+    }
+    
+    public function out(string $x, string $str) {
+    	echo $str ." ".$this->asLittleEndianHexString($x)."\n";
+    }
+    
+    
+    public function asLittleEndianHexString(string $x): string {
+    	$r = $this->toByteArrayLittleEndian(self::bcdechex($x));
+    	if(count($r) != 32) {
+    		throw new Exception(' arrays for curve have to be 32 bytes: '.count($r));
+    	}
+    	return $this->asString($r);
+    }
+    
+    // further php utils:
+    public static function bchexdec($hex) {
+    	if(strlen($hex) == 1) {
+    		return hexdec($hex);
+    	} else {
+    		$remain = substr($hex, 0, -1);
+    		$last = substr($hex, -1);
+    		return bcadd(bcmul(16, bchexdec($remain)), hexdec($last));
+    	}
+    }
+    
+    public static function bcdechex($dec) {
+    	$last = bcmod($dec, "16");
+    	$remain = bcdiv(bcsub($dec, $last), "16");
+    	
+    	if($remain == 0) {
+    		return dechex($last);
+    	} else {
+    		return self::bcdechex($remain).dechex($last);
+    	}
     }
 }
 
