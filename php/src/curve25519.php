@@ -152,7 +152,32 @@ final class Curve25519
     }
 
     public function x25519( string $k, string $u, int $bits): string {
-    	return "1";
+        //BigInteger x_1, x_2, z_2, x_3, z_3, swap;
+        $x_1 = $u;
+        $x_2 = "1";
+        $z_2 = "0";
+        $x_3 = $u;
+        $z_3 = "1";
+        $swap = "0";
+        for ($t = $bits-1; $t >= 0; $t--) {
+        }
+        $cond2 = $this->cswap($swap, $x_2, $x_3);
+        return "1";
+    }
+    
+    private function cswap(string $swap, string $x_2, string $x_3): array {
+        // swap is 0 or 1
+        //out(x_2, "swap a");
+        //out(x_3, "swap b");
+        //System.out.println(swap);
+        $dummy = bcsub("0", $swap);
+        // bitwise operations: ? scalar -> decodeLittleendian -> hexString -> toByteArray -> operation
+//         $dummy = bc//dummy.and(x_2.xor(x_3));
+//         BigInteger[] r = new BigInteger[2];
+//         r[0] = x_2.xor(dummy);
+//         r[1] = x_3.xor(dummy);
+//         return r;
+        return array_fill(0, 32, 0);
     }
     
     public function out(string $x, string $str) {

@@ -29,6 +29,32 @@ function get_var_type($var)
 final class CurveTest extends TestCase
 {
 
+    public function testLengthException()
+    {
+        $this->expectException(Exception::class);
+        $bc = new BcUtil();
+        BcUtil::lengthHex("0102034", 3);
+    }
+    
+    public function testCanBitwiseBCMath() : void
+    {
+        $bc = new BcUtil();
+        $this->assertEquals("000000", BcUtil::lengthHex("", 3));
+        $this->assertEquals("0000fe", BcUtil::lengthHex("fe", 3));
+        $this->assertEquals("000001", BcUtil::dec2hex("1", 3));
+        $this->assertEquals("000010", BcUtil::dec2hex("16", 3));
+        $d = "31029842492115040904895560451863089656472772604678260265531221036453811406496";
+        $this->assertEquals("449a44ba44226a50185afcc10a4c1462dd5e46824b15163b9d7c52f06be346a0", BcUtil::dec2hex($d, 32));
+        $d = bcadd($d, "1");
+        $this->assertEquals("449a44ba44226a50185afcc10a4c1462dd5e46824b15163b9d7c52f06be346a1", BcUtil::dec2hex($d, 32));
+        $this->assertEquals(
+            [0x00, 0x01, 0x02],
+            BcUtil::hex2array("000102", 3));
+        $a = BcUtil::hex2array("449a44ba44226a50185afcc10a4c1462dd5e46824b15163b9d7c52f06be346a0", 32);
+        $this->assertEquals($a[0], 0x44);
+        $this->assertEquals($a[31], 0xa0);
+    }
+    
     public function testCanConvert(): void
     {
         $crv = new Curve25519();
