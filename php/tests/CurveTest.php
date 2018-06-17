@@ -38,7 +38,7 @@ final class CurveTest extends TestCase
     
     public function testCanBitwiseBCMath() : void
     {
-        $bc = new BcUtil();
+        // conversions
         $this->assertEquals("000000", BcUtil::lengthHex("", 3));
         $this->assertEquals("0000fe", BcUtil::lengthHex("fe", 3));
         $this->assertEquals("000001", BcUtil::dec2hex("1", 3));
@@ -53,6 +53,12 @@ final class CurveTest extends TestCase
         $a = BcUtil::hex2array("449a44ba44226a50185afcc10a4c1462dd5e46824b15163b9d7c52f06be346a0", 32);
         $this->assertEquals($a[0], 0x44);
         $this->assertEquals($a[31], 0xa0);
+        $a = BcUtil::dec2array($d, 32);
+        $this->assertEquals($a[0], 0x44);
+        $this->assertEquals($a[31], 0xa1);
+        
+        // AND
+        $this->assertEquals("01", BcUtil::andHex("ff", "01", 1));
     }
     
     public function testCanConvert(): void
@@ -102,8 +108,8 @@ final class CurveTest extends TestCase
         echo dechex($x)."\n";
         echo " skalar decoded " .Curve25519::bcdechex($scalar1Decoded)."\n";
         $crv->out($scalar1Decoded, " skalar decoded ");
-        $outU = $crv->x25519($scalar1Decoded, $uDecoded, 255);
-        $crv->out($outU, "output U:");
+        //$outU = $crv->x25519($scalar1Decoded, $uDecoded, 255);
+        //$crv->out($outU, "output U:");
     }
     
     // public function testCannotBeCreatedFromInvalidEmailAddress(): void

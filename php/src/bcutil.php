@@ -51,6 +51,12 @@ class BcUtil
         return self::lengthHex($hex, $bytes);
     }
     
+    public static function dec2array( string $dec, int $bytes) :array
+    {
+        $hex = self::dec2hex($dec, $bytes);
+        return self::hex2array($hex, $bytes);
+    }
+    
     /**
      * Convert Hex String FA01EE... to int array 0xfa,0x01,0xee
      * Hex byte arrays are strings in PHP.
@@ -80,15 +86,99 @@ class BcUtil
         return $a;
     }
     
+    /**
+     * @param string $hex
+     * @param int $bytes
+     * @return array
+     */
     public static function hex2array( string $hex, int $bytes) :array
     {
         $hex = self::lengthHex($hex, $bytes);
         return self::toByteArray($hex, $bytes);
     }
     
-    public static function and( string $a, string $b) :string
+    /**
+     * convert array to hex string
+     * @param array $b
+     * @param int $bytes
+     * @throws Exception
+     * @return string
+     */
+    public function array2hex(array $b, int $bytes): string {
+        if(count($b) != $bytes) {
+            throw new Exception(' arrays for curve have to be 32 bytes: '.count($b));
+        }
+        $buf = "";
+        for ($i = 0; $i < $bytes; $i++) {
+            $h = dechex($b[$i]);
+            if (strlen($h) < 2) {
+                $h = '0'.$h;
+            }
+            $buf = $buf.$h;
+        }
+        return self::lengthHex($buf, $bytes);
+    }
+    
+    /**
+     * Bitwise AND for arrays
+     * @param array $a
+     * @param array $b
+     * @param int $bytes
+     * @return array
+     */
+    public static function andArray( array $a, array $b, int $bytes) :array
     {
-        return "";
+        // convert to arrays:
+        for ($i = 0; $i < $bytes; $i++) {
+            $a[$i] = 0xff & ($a[$i] & $b[$i]);
+        }
+        return $a;
+    }
+    
+    /**
+     * Bitwise XOR for arrays
+     * @param array $a
+     * @param array $b
+     * @param int $bytes
+     * @return array
+     */
+    public static function xorArray( array $a, array $b, int $bytes) :array
+    {
+        // convert to arrays:
+        for ($i = 0; $i < $bytes; $i++) {
+            $a[$i] = 0xff & ($a[$i] ^ $b[$i]);
+        }
+        return $a;
+    }
+
+    /**
+     * Bitwise AND for hex strings
+     * @param string $a
+     * @param string $b
+     * @param int $bytes
+     * @return string
+     */
+    public static function andHex( string $a, string $b, int $bytes) :string
+    {
+        // convert to arrays:
+        $a = self::hex2array($a, $bytes);
+        $b = self::hex2array($b, $bytes);
+        return self::array2hex(self::andArray($a, $b, $bytes), $bytes);
+    }
+
+    /**
+     * Bitwise XOR for hex strings
+     * @param string $a
+     * @param string $b
+     * @param int $bytes
+     * @return string
+     */
+    public static function xorHex( string $a, string $b, int $bytes) :string
+    {
+        // convert to arrays:
+        $a = self::hex2array($a, $bytes);
+        $b = self::hex2array($b, $bytes);
+        return self::array2hex(self::xorArray($a, $b, $bytes), $bytes);
     }
 }
 

@@ -172,12 +172,11 @@ final class Curve25519
         //System.out.println(swap);
         $dummy = bcsub("0", $swap);
         // bitwise operations: ? scalar -> decodeLittleendian -> hexString -> toByteArray -> operation
-//         $dummy = bc//dummy.and(x_2.xor(x_3));
-//         BigInteger[] r = new BigInteger[2];
-//         r[0] = x_2.xor(dummy);
-//         r[1] = x_3.xor(dummy);
-//         return r;
-        return array_fill(0, 32, 0);
+        $dummy = BcUtil::andHex($dummy, BcUtil::xorHex($x_2, $x_3, 32), 32); //$dummy.and(x_2.xor(x_3));
+        $a = [BcUtil::xorHex($x_2, $dummy, 32),
+              BcUtil::xorHex($x_3, $dummy, 32)
+        ];
+        return $a;
     }
     
     public function out(string $x, string $str) {
