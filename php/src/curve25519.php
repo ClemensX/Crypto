@@ -151,8 +151,17 @@ final class Curve25519
     	return $v;
     }
 
+    /**
+     * Curve25519 implementation. All input/output is long decimal
+     * @param string $k
+     * @param string $u
+     * @param int $bits
+     * @return string
+     */
     public function x25519( string $k, string $u, int $bits): string {
-        //BigInteger x_1, x_2, z_2, x_3, z_3, swap;
+//     	BcUtil::lengthHex($k, 32);
+//     	BcUtil::lengthHex($u, 32);
+    	//BigInteger x_1, x_2, z_2, x_3, z_3, swap;
         $x_1 = $u;
         $x_2 = "1";
         $z_2 = "0";
@@ -160,22 +169,98 @@ final class Curve25519
         $z_3 = "1";
         $swap = "0";
         for ($t = $bits-1; $t >= 0; $t--) {
+//         	BigInteger k_t = k.shiftRight(t).and(BigInteger.ONE);
+//         	swap = swap.xor(k_t);
+//         	//System.out.println("t k_t swap " + t + " " + k_t.toString(16) + " " + swap.toString(16) );
+//         	BigInteger[] cs = cswap(swap, x_2, x_3);
+//         	x_2 = cs[0];
+//         	x_3 = cs[1];
+//         	cs = cswap(swap, z_2, z_3);
+//         	z_2 = cs[0];
+//         	z_3 = cs[1];
+//         	swap = k_t;
+			$k_t = BcUtil::shiftRightDec($k, $t, 32);
+			$k_t = BcUtil::andDec($k_t, "1", 32); 
+			$swap = BcUtil::xorDec($swap, $k_t, 32);
+			//echo "t k_t swap ". $t. " " .self::bcdechex($k_t) . " " .self::bcdechex($swap)."\n";
+			$cs = $this->cswapDec($swap, $x_2, $x_3);
+        	$x_2 = $cs[0];
+        	$x_3 = $cs[1];
+        	$cs = $this->cswapDec($swap, $z_2, $z_3);
+        	$z_2 = $cs[0];
+        	$z_3 = $cs[1];
+        	$swap = $k_t;
+        	$A = bcadd($x_2, $z_2);
+        	$AA = bcpow($A, "2");
+        	$B = bcsub($x_2, $z_2);
+        	$BB = bcpow($B, "2");
+        	$E = bcsub($AA, $BB);
+        	$C = bcadd($x_3, $z_3);
+        	$D = bcsub($x_3, $z_3);
+        	$DA = bcmul($D, $A);
+        	$CB = bcmul($C, $B);
+//         	x_3 = DA.add(CB).pow(2).mod(p);
+			$x_3 = bcadd($DA, $CB);
+			$x_3 = bcpow($x_3, "2");
+			$x_3 = bcmod($x_3, self::$p);
+//         	z_3 = x_1.multiply(DA.subtract(CB).pow(2)).mod(p);
+			$z_3 = bcsub($DA, $CB);
+			$z_3 = bcpow($z_3, "2");
+			$z_3 = bcmul($x_1, $z_3);
+			$z_3 = bcmod($z_3, self::$p);
+			//         	x_2 = AA.multiply(BB).mod(p);
+			$x_2 = bcmul($AA, $BB);
+			$x_2 = bcmod($x_2, self::$p);
+//         	z_2 = E.multiply(AA.add(a24.multiply(E))).mod(p);
+			$z_2 = bcmul(self::$a24, $E);
+			$z_2 = bcadd($AA, $z_2);
+			$z_2 = bcmul($E, $z_2);
+			$z_2 = bcmod($z_2, self::$p);
         }
-        $cond2 = $this->cswap($swap, $x_2, $x_3);
-        return "1";
+//         BigInteger[] cond2 = cswap(swap, x_2, x_3);
+//         x_2 = cond2[0];
+//         x_3 = cond2[1];
+//         cond2 = cswap(swap, z_2, z_3);
+//         z_2 = cond2[0];
+//         z_3 = cond2[1];
+//         BigInteger ret = x_2.multiply(z_2.modPow(p_minus2, p));
+//         ret = ret.mod(p);
+        $cond2 = $this->cswapDec($swap, $x_2, $x_3);
+        $x_2 = $cond2[0];
+        $x_3 = $cond2[1];
+        $cond2 = $this->cswapDec($swap, $z_2, $z_3);
+        $z_2 = $cond2[0];
+        $z_3 = $cond2[1];
+        $mP = bcpowmod($z_2, self::$p_minus2, self::$p); 
+        $ret = bcmul($x_2, $mP);
+        return bcmod($ret, self::$p);
     }
     
-    private function cswap(string $swap, string $x_2, string $x_3): array {
+    /**
+     * cswap with long decimal input 
+     * @param string $swap
+     * @param string $x_2
+     * @param string $x_3
+     * @return array
+     */
+    private function cswapDec(string $swap, string $x_2, string $x_3): array {
         // swap is 0 or 1
         //out(x_2, "swap a");
         //out(x_3, "swap b");
         //System.out.println(swap);
+        // $swap needs to be decimal:
         $dummy = bcsub("0", $swap);
-        // bitwise operations: ? scalar -> decodeLittleendian -> hexString -> toByteArray -> operation
+        // now switch everything to hex:
+        $dummy = BCUtil::dec2hex($dummy, 32);
+        $x_2 = BCUtil::dec2hex($x_2, 32);
+        $x_3 = BCUtil::dec2hex($x_3, 32);
         $dummy = BcUtil::andHex($dummy, BcUtil::xorHex($x_2, $x_3, 32), 32); //$dummy.and(x_2.xor(x_3));
         $a = [BcUtil::xorHex($x_2, $dummy, 32),
               BcUtil::xorHex($x_3, $dummy, 32)
         ];
+        // convert result back to decimal:
+        $a[0] = BCUtil::hex2dec($a[0], 32);
+        $a[1] = BCUtil::hex2dec($a[1], 32);
         return $a;
     }
     

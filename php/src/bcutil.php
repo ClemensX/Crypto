@@ -14,7 +14,7 @@ class BcUtil
         } else {
             $remain = substr($hex, 0, -1);
             $last = substr($hex, -1);
-            return bcadd(bcmul(16, bchexdec($remain)), hexdec($last));
+            return bcadd(bcmul(16, self::bchexdec($remain)), hexdec($last));
         }
     }
     
@@ -34,7 +34,7 @@ class BcUtil
     {
         $lenBytes = intdiv(strlen($hex)+1, 2);
         if ($lenBytes > $bytes) {
-            throw new Exception("input too long: ".$hex);
+            throw new Exception("hex input too long: ".$hex);
         }
         while (strlen($hex) < $bytes*2) {
             $hex = "0".$hex;
@@ -45,10 +45,16 @@ class BcUtil
     
     // conversions: use formats dec, hex, array. Array is used internally for all bit operations
     
+    public static function hex2dec( string $hex, int $bytes) :string
+    {
+    	$hex = self::lengthHex($hex, $bytes);
+    	return self::bchexdec($hex);
+    }
+    
     public static function dec2hex( string $dec, int $bytes) :string
     {
-        $hex = self::bcdechex($dec);
-        return self::lengthHex($hex, $bytes);
+    	$hex = self::bcdechex($dec);
+    	return self::lengthHex($hex, $bytes);
     }
     
     public static function dec2array( string $dec, int $bytes) :array
@@ -104,22 +110,72 @@ class BcUtil
      * @throws Exception
      * @return string
      */
-    public function array2hex(array $b, int $bytes): string {
-        if(count($b) != $bytes) {
-            throw new Exception(' arrays for curve have to be 32 bytes: '.count($b));
-        }
-        $buf = "";
-        for ($i = 0; $i < $bytes; $i++) {
-            $h = dechex($b[$i]);
-            if (strlen($h) < 2) {
-                $h = '0'.$h;
-            }
-            $buf = $buf.$h;
-        }
-        return self::lengthHex($buf, $bytes);
+    public static function array2hex(array $b, int $bytes): string {
+    	if(count($b) != $bytes) {
+    		throw new Exception(' arrays for curve have to be 32 bytes: '.count($b));
+    	}
+    	$buf = "";
+    	for ($i = 0; $i < $bytes; $i++) {
+    		$h = dechex($b[$i]);
+    		if (strlen($h) < 2) {
+    			$h = '0'.$h;
+    		}
+    		$buf = $buf.$h;
+    	}
+    	return self::lengthHex($buf, $bytes);
     }
     
     /**
+     * convert array to decimal string
+     * @param array $b
+     * @param int $bytes
+     * @throws Exception
+     * @return string
+     */
+    public static function array2dec(array $b, int $bytes): string {
+    	$hex = self::array2hex($b, $bytes);
+    	return self::hex2dec($hex, $bytes);
+    }
+    
+    // logical functions
+    
+    /**
+     * Shift bits to the right, fill empty bits with 0
+     * @param string $a
+     * @param int $shift
+     * @param int $bytes
+     * @return string
+     */
+    public static function shiftRightDec( string $a, int $shift, int $bytes) :string
+    {
+    	// calc divisor:
+    	$divisor = bcpow("2", $shift);
+    	// calc division:
+    	//echo "shiftright division: ".$a." / ".$divisor."\n";
+    	$d = bcdiv($a, $divisor);
+    	// return the division:
+    	return $d;
+    }
+    
+        /**
+     * Shift bits to the right, fill empty bits with 0
+     * @param string $a
+     * @param int $shift
+     * @param int $bytes
+     * @return string
+     */
+    public static function shiftRightHex( string $a, int $shift, int $bytes) :string
+    {
+    	self::lengthHex($a, $bytes);
+    	$a = self::bchexdec($a);
+    	$d = self::shiftRightDec($a, $shift, $bytes);
+    	// reformat to hex:
+    	$d = self::bcdechex($d);
+    	// return the division:
+    	return self::lengthHex($d, $bytes);
+    }
+    
+/**
      * Bitwise AND for arrays
      * @param array $a
      * @param array $b
@@ -136,22 +192,21 @@ class BcUtil
     }
     
     /**
-     * Bitwise XOR for arrays
-     * @param array $a
-     * @param array $b
+     * Bitwise AND for decimal strings
+     * @param string $a
+     * @param string $b
      * @param int $bytes
-     * @return array
+     * @return string
      */
-    public static function xorArray( array $a, array $b, int $bytes) :array
+    public static function andDec( string $a, string $b, int $bytes) :string
     {
-        // convert to arrays:
-        for ($i = 0; $i < $bytes; $i++) {
-            $a[$i] = 0xff & ($a[$i] ^ $b[$i]);
-        }
-        return $a;
+    	// convert to arrays:
+    	$a = self::dec2array($a, $bytes);
+    	$b = self::dec2array($b, $bytes);
+    	return self::array2dec(self::andArray($a, $b, $bytes), $bytes);
     }
-
-    /**
+    
+        /**
      * Bitwise AND for hex strings
      * @param string $a
      * @param string $b
@@ -167,6 +222,21 @@ class BcUtil
     }
 
     /**
+     * Bitwise XOR for decimal strings
+     * @param string $a
+     * @param string $b
+     * @param int $bytes
+     * @return string
+     */
+    public static function xorDec( string $a, string $b, int $bytes) :string
+    {
+    	// convert to arrays:
+    	$a = self::dec2array($a, $bytes);
+    	$b = self::dec2array($b, $bytes);
+    	return self::array2dec(self::xorArray($a, $b, $bytes), $bytes);
+    }
+    
+    	/**
      * Bitwise XOR for hex strings
      * @param string $a
      * @param string $b
@@ -180,5 +250,22 @@ class BcUtil
         $b = self::hex2array($b, $bytes);
         return self::array2hex(self::xorArray($a, $b, $bytes), $bytes);
     }
+
+/**
+     * Bitwise XOR for arrays
+     * @param array $a
+     * @param array $b
+     * @param int $bytes
+     * @return array
+     */
+    public static function xorArray( array $a, array $b, int $bytes) :array
+    {
+    	// convert to arrays:
+    	for ($i = 0; $i < $bytes; $i++) {
+    		$a[$i] = 0xff & ($a[$i] ^ $b[$i]);
+    	}
+    	return $a;
+    }
+    
 }
 

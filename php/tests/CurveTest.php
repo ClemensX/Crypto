@@ -29,14 +29,25 @@ function get_var_type($var)
 final class CurveTest extends TestCase
 {
 
-    public function testLengthException()
-    {
-        $this->expectException(Exception::class);
-        $bc = new BcUtil();
-        BcUtil::lengthHex("0102034", 3);
-    }
-    
-    public function testCanBitwiseBCMath() : void
+	public function testBits()
+	{
+		$v = BcUtil::shiftRightHex("04", 2, 1);
+		$this->assertEquals("01", $v);
+		$v = BcUtil::shiftRightHex("ff", 1, 1);
+		$this->assertEquals("7f", $v);
+		$v = BcUtil::shiftRightHex("00ff", 1, 2);
+		$this->assertEquals("007f", $v);
+		//echo "shifted ".$v."\n";
+	}
+	
+	public function testLengthException()
+	{
+		$this->expectException(Exception::class);
+		$bc = new BcUtil();
+		BcUtil::lengthHex("0102034", 3);
+	}
+	
+	public function testCanBitwiseBCMath() : void
     {
         // conversions
         $this->assertEquals("000000", BcUtil::lengthHex("", 3));
@@ -107,9 +118,11 @@ final class CurveTest extends TestCase
         $x = 0 - 2;
         echo dechex($x)."\n";
         echo " skalar decoded " .Curve25519::bcdechex($scalar1Decoded)."\n";
+        $uDecodedHex = BcUtil::dec2hex($uDecoded, 32);
+        $scalar1DecodedHex = BcUtil::dec2hex($scalar1Decoded, 32);
         $crv->out($scalar1Decoded, " skalar decoded ");
-        //$outU = $crv->x25519($scalar1Decoded, $uDecoded, 255);
-        //$crv->out($outU, "output U:");
+        $outU = $crv->x25519($scalar1Decoded, $uDecoded, 255);
+        $crv->out($outU, "output U:");
     }
     
     // public function testCannotBeCreatedFromInvalidEmailAddress(): void

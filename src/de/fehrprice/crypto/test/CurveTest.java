@@ -197,7 +197,7 @@ public class CurveTest {
 		BigInteger outU = crv.x25519(scalar1Decoded, uDecoded, 255);
 		//System.out.println("output U: " + outU.toString(16));
 		crv.out(outU, "output U:");
-		//System.out.println(outU);
+		System.out.println(outU);
 	}
 	
 	/**
