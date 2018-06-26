@@ -1,6 +1,9 @@
 <?php
 declare(strict_types = 1);
 
+require_once 'C:\dev\repos\Crypto\php\src\bcutil.php';
+require_once 'C:\dev\repos\Crypto\php\src\curve25519.php';
+
 use PHPUnit\Framework\TestCase;
 
 /**
@@ -28,6 +31,15 @@ function get_var_type($var)
 // call like this: php phpunit.phar --bootstrap src/autoload.php --testdox tests
 final class CurveTest extends TestCase
 {
+    
+    public function testHexConversion() {
+        $h = BCUtil::dec2hex("1", 1);
+        $this->assertEquals("01", $h);
+        $h = BCUtil::dec2hex("255", 1);
+        $this->assertEquals("ff", $h);
+        $h = BCUtil::dec2hex("-1", 1);
+        $this->assertEquals("ff", $h);
+    }
 
 	public function testBits()
 	{
@@ -112,12 +124,12 @@ final class CurveTest extends TestCase
         $this->assertEquals($biguAsNumber, $bigu);
         $uDecoded = $crv->decodeUCoordinate($crv->toByteArray($ucoord1), 255);
         $this->assertEquals($biguAsNumber, $uDecoded);
-        echo " u decoded ".Curve25519::bcdechex($uDecoded)."\n";
+        echo " u decoded ".BcUtil::bcdechex($uDecoded)."\n";
         $uEncoded = $crv->encodeUCoordinate($uDecoded, 255);
         echo " u encoded ".$uEncoded."\n";
         $x = 0 - 2;
         echo dechex($x)."\n";
-        echo " skalar decoded " .Curve25519::bcdechex($scalar1Decoded)."\n";
+        echo " skalar decoded " .BcUtil::bcdechex($scalar1Decoded)."\n";
         $uDecodedHex = BcUtil::dec2hex($uDecoded, 32);
         $scalar1DecodedHex = BcUtil::dec2hex($scalar1Decoded, 32);
         $crv->out($scalar1Decoded, " skalar decoded ");

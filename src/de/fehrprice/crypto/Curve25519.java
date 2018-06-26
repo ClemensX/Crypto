@@ -178,8 +178,11 @@ public class Curve25519 {
 		swap = BigInteger.ZERO;
 		for (int t = bits-1; t >= 0; t--) {
 			//System.out.println(t);
+			out(k.shiftRight(t), "k_t shift");
 			BigInteger k_t = k.shiftRight(t).and(BigInteger.ONE);
+			out(k_t, "k_t and");
 			swap = swap.xor(k_t);
+			out(swap, "swap xor");
 			//System.out.println("t k_t swap " + t + " " + k_t.toString(16) + " " + swap.toString(16) );
 			BigInteger[] cs = cswap(swap, x_2, x_3);
 			x_2 = cs[0];
@@ -189,8 +192,16 @@ public class Curve25519 {
 			z_3 = cs[1];
 			swap = k_t;
 			
+			out(x_2, "x_2 ");
+			out(x_3, "x_3 ");
+			out(z_2, "z_2 ");
+			out(z_3, "z_3 ");
 			BigInteger A = x_2.add(z_2);
+			System.out.println("A " + A);
+			//out(z_2, "AA ");
 			BigInteger AA = A.pow(2);
+			System.out.println("AA " + AA);
+			//out(AA, "AA ");
 			BigInteger B = x_2.subtract(z_2);
 			BigInteger BB = B.pow(2);
 			BigInteger E = AA.subtract(BB);
@@ -198,11 +209,13 @@ public class Curve25519 {
 			BigInteger D = x_3.subtract(z_3);
 			BigInteger DA = D.multiply(A);
 			BigInteger CB = C.multiply(B);
+			System.exit(0);
 			x_3 = DA.add(CB).pow(2).mod(p);
 			z_3 = x_1.multiply(DA.subtract(CB).pow(2)).mod(p);
 			x_2 = AA.multiply(BB).mod(p);
 			z_2 = E.multiply(AA.add(a24.multiply(E))).mod(p);
-		}
+			out(z_2, " z_2 ");
+			}
 		BigInteger[] cond2 = cswap(swap, x_2, x_3);
 		x_2 = cond2[0];
 		x_3 = cond2[1];
@@ -222,10 +235,13 @@ public class Curve25519 {
 		//out(x_3, "swap b");
 		//System.out.println(swap);
 		BigInteger dummy = BigInteger.ZERO.subtract(swap);
+		out(dummy, "dummy hex");
 		dummy = dummy.and(x_2.xor(x_3));
 		BigInteger[] r = new BigInteger[2];
 		r[0] = x_2.xor(dummy);
 		r[1] = x_3.xor(dummy);
+		out(r[0], "r[0]");
+		out(r[1], "r[1]");
 		return r;
 	}
 

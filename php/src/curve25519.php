@@ -144,7 +144,7 @@ final class Curve25519
 
     public function encodeUCoordinate(string $u, int $bits):string {
     	$u = bcmod($u, self::$p);
-    	$v = self::bcdechex($u);//u.toString(16);
+    	$v = BcUtil::bcdechex($u);//u.toString(16);
     	if (strlen($v) != 64) {
     		throw new Exception(' bcmath number too long: '.$v);
     	}
@@ -180,8 +180,11 @@ final class Curve25519
 //         	z_3 = cs[1];
 //         	swap = k_t;
 			$k_t = BcUtil::shiftRightDec($k, $t, 32);
+			$this->out($k_t, "k_t shift ");
 			$k_t = BcUtil::andDec($k_t, "1", 32); 
+			$this->out($k_t, "k_t and ");
 			$swap = BcUtil::xorDec($swap, $k_t, 32);
+			$this->out($swap, "swap xor ");
 			//echo "t k_t swap ". $t. " " .self::bcdechex($k_t) . " " .self::bcdechex($swap)."\n";
 			$cs = $this->cswapDec($swap, $x_2, $x_3);
         	$x_2 = $cs[0];
@@ -190,8 +193,15 @@ final class Curve25519
         	$z_2 = $cs[0];
         	$z_3 = $cs[1];
         	$swap = $k_t;
+        	$this->out($x_2, "x_2 ");
+        	$this->out($x_3, "x_3 ");
+        	$this->out($z_2, "z_2 ");
+        	$this->out($z_3, "z_3 ");
         	$A = bcadd($x_2, $z_2);
+        	echo "A ".$A."\n";
         	$AA = bcpow($A, "2");
+        	echo "AA ".$AA."\n";
+        	    //$this->out($AA, "AA ");
         	$B = bcsub($x_2, $z_2);
         	$BB = bcpow($B, "2");
         	$E = bcsub($AA, $BB);
@@ -199,7 +209,8 @@ final class Curve25519
         	$D = bcsub($x_3, $z_3);
         	$DA = bcmul($D, $A);
         	$CB = bcmul($C, $B);
-//         	x_3 = DA.add(CB).pow(2).mod(p);
+        	exit;
+        	//         	x_3 = DA.add(CB).pow(2).mod(p);
 			$x_3 = bcadd($DA, $CB);
 			$x_3 = bcpow($x_3, "2");
 			$x_3 = bcmod($x_3, self::$p);
@@ -216,6 +227,7 @@ final class Curve25519
 			$z_2 = bcadd($AA, $z_2);
 			$z_2 = bcmul($E, $z_2);
 			$z_2 = bcmod($z_2, self::$p);
+			$this->out($z_2, " z_2");
         }
 //         BigInteger[] cond2 = cswap(swap, x_2, x_3);
 //         x_2 = cond2[0];
@@ -250,8 +262,13 @@ final class Curve25519
         //System.out.println(swap);
         // $swap needs to be decimal:
         $dummy = bcsub("0", $swap);
+        $dummy2 = $dummy;
+        echo "dummy ".$dummy."\n";
         // now switch everything to hex:
         $dummy = BCUtil::dec2hex($dummy, 32);
+        echo "dummy ".$dummy."\n";
+        $dummy2 = BcUtil::bcdechex($dummy2);
+        echo "dummy2 ".$dummy2."\n";
         $x_2 = BCUtil::dec2hex($x_2, 32);
         $x_3 = BCUtil::dec2hex($x_3, 32);
         $dummy = BcUtil::andHex($dummy, BcUtil::xorHex($x_2, $x_3, 32), 32); //$dummy.and(x_2.xor(x_3));
@@ -261,6 +278,8 @@ final class Curve25519
         // convert result back to decimal:
         $a[0] = BCUtil::hex2dec($a[0], 32);
         $a[1] = BCUtil::hex2dec($a[1], 32);
+        $this->out($a[0], "a[0] ");
+        $this->out($a[1], "a[1] ");
         return $a;
     }
     
@@ -270,7 +289,7 @@ final class Curve25519
     
     
     public function asLittleEndianHexString(string $x): string {
-    	$r = $this->toByteArrayLittleEndian(self::bcdechex($x));
+        $r = $this->toByteArrayLittleEndian(BcUtil::bcdechex($x));
     	if(count($r) != 32) {
     		throw new Exception(' arrays for curve have to be 32 bytes: '.count($r));
     	}
@@ -278,7 +297,7 @@ final class Curve25519
     }
     
     // further php utils:
-    public static function bchexdec($hex) {
+/*    public static function bchexdec($hex) {
     	if(strlen($hex) == 1) {
     		return hexdec($hex);
     	} else {
@@ -297,7 +316,7 @@ final class Curve25519
     	} else {
     		return self::bcdechex($remain).dechex($last);
     	}
-    }
+    }*/
 }
 
 // $c = new Curve25519();

@@ -29,10 +29,23 @@ class BcUtil
         }
     }
 
-    // check byte length, throws exception if wrong byte length, prepends 0 if too short
+    /**
+     * check byte length, throws exception if wrong byte length
+     * auto adjust length: if more bytes needed: sign is prepended until byte nuber is ok
+     * if less bytes needed: if highest bit set (negative): try shortening if 0xff byte found
+     *   if highest bit not set (positive number): try shortening if zero byte found
+     * @param string $hex
+     * @param int $bytes
+     * @throws Exception
+     * @return string
+     */
     public static function lengthHex( string $hex, int $bytes) :string
     {
+        $firstByte = substr($hex, 0, 2);
+        $firstByteVal = hexdec($firstByte);
+        $is_negative = $firstByteVal >= 0x80 ? TRUE : FALSE;
         $lenBytes = intdiv(strlen($hex)+1, 2);
+        // TODO lengthen/shorten
         if ($lenBytes > $bytes) {
             throw new Exception("hex input too long: ".$hex);
         }
@@ -54,6 +67,7 @@ class BcUtil
     public static function dec2hex( string $dec, int $bytes) :string
     {
     	$hex = self::bcdechex($dec);
+    	echo "dec2hex ".$hex."\n";
     	return self::lengthHex($hex, $bytes);
     }
     
