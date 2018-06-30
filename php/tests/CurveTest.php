@@ -39,6 +39,9 @@ final class CurveTest extends TestCase
         $this->assertEquals("ff", $h);
         $h = BCUtil::dec2hex("-1", 1);
         $this->assertEquals("ff", $h);
+        $h = BCUtil::dec2hex("-2", 1);
+        $this->assertEquals("fe", $h);
+        $h = BCUtil::dec2hex("-200", 1);
     }
 
 	public function testBits()

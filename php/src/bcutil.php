@@ -30,10 +30,22 @@ class BcUtil
     }
 
     /**
+     * Check if hex string is negative. INput must be hey string with even count chars: 2 chars for one byte
+     * @param string $hex
+     * @return bool
+     */
+    public static function isHexStringNegative(string $hex) : bool {
+        $firstByte = substr($hex, 0, 2);
+        $firstByteVal = hexdec($firstByte);
+        $is_negative = $firstByteVal >= 0x80 ? TRUE : FALSE;
+        return $is_negative;
+    }
+    
+    /**
      * check byte length, throws exception if wrong byte length
      * auto adjust length: if more bytes needed: sign is prepended until byte nuber is ok
-     * if less bytes needed: if highest bit set (negative): try shortening if 0xff byte found
-     *   if highest bit not set (positive number): try shortening if zero byte found
+     * if less bytes needed: if highest bit set (negative): try shortening while 0xff byte found
+     *   if highest bit not set (positive number): try shortening while zero byte found
      * @param string $hex
      * @param int $bytes
      * @throws Exception
@@ -41,11 +53,27 @@ class BcUtil
      */
     public static function lengthHex( string $hex, int $bytes) :string
     {
-        $firstByte = substr($hex, 0, 2);
-        $firstByteVal = hexdec($firstByte);
-        $is_negative = $firstByteVal >= 0x80 ? TRUE : FALSE;
+        $original = $hex;
+        $is_negative = self::isHexStringNegative($hex);
+//         if ($is_negative )
+//             echo $hex." is neg\n";
+//         else
+//             echo $hex." is pos\n";
         $lenBytes = intdiv(strlen($hex)+1, 2);
-        // TODO lengthen/shorten
+        //echo "len ".$lenBytes."\n";
+        // shorten:
+        if ($lenBytes > $bytes) {
+            if ($is_negative) {
+                $discardBytes = $lenBytes - $bytes;
+                $hex = substr($hex, $discardBytes * 2, $bytes * 2);
+                echo "short ".$hex."\n";
+                if (!self::isHexStringNegative($hex)) {
+                    // shortening left a positive number: fail!
+                    throw new Exception("hex input could not be shortened to neg number: ".$original);
+                }
+                $lenBytes = intdiv(strlen($hex)+1, 2);
+            }
+        }
         if ($lenBytes > $bytes) {
             throw new Exception("hex input too long: ".$hex);
         }
