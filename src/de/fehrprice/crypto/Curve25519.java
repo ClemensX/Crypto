@@ -205,6 +205,10 @@ public class Curve25519 {
 			BigInteger D = x_3.subtract(z_3);
 			BigInteger DA = D.multiply(A);
 			BigInteger CB = C.multiply(B);
+			x_3 = DA.add(CB).pow(2).mod(p);
+			z_3 = x_1.multiply(DA.subtract(CB).pow(2)).mod(p);
+			x_2 = AA.multiply(BB).mod(p);
+			z_2 = E.multiply(AA.add(a24.multiply(E))).mod(p);
 			System.out.println("A " + A);
 			System.out.println("AA " + AA);
 			System.out.println("B " + B);
@@ -214,11 +218,11 @@ public class Curve25519 {
 			System.out.println("D " + D);
 			System.out.println("DA " + DA);
 			System.out.println("CB " + CB);
+			System.out.println("x_3 " + x_3);
+			System.out.println("z_3 " + z_3);
+			System.out.println("x_2 " + x_2);
+			System.out.println("z_2 " + z_2);
 			System.exit(0);
-			x_3 = DA.add(CB).pow(2).mod(p);
-			z_3 = x_1.multiply(DA.subtract(CB).pow(2)).mod(p);
-			x_2 = AA.multiply(BB).mod(p);
-			z_2 = E.multiply(AA.add(a24.multiply(E))).mod(p);
 //			out(z_2, " z_2 ");
 			}
 		BigInteger[] cond2 = cswap(swap, x_2, x_3);
