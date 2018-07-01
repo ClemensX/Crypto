@@ -180,11 +180,11 @@ final class Curve25519
 //         	z_3 = cs[1];
 //         	swap = k_t;
 			$k_t = BcUtil::shiftRightDec($k, $t, 32);
-			$this->out($k_t, "k_t shift ");
+//			$this->out($k_t, "k_t shift ");
 			$k_t = BcUtil::andDec($k_t, "1", 32); 
-			$this->out($k_t, "k_t and ");
+// 			$this->out($k_t, "k_t and ");
 			$swap = BcUtil::xorDec($swap, $k_t, 32);
-			$this->out($swap, "swap xor ");
+// 			$this->out($swap, "swap xor ");
 			//echo "t k_t swap ". $t. " " .self::bcdechex($k_t) . " " .self::bcdechex($swap)."\n";
 			$cs = $this->cswapDec($swap, $x_2, $x_3);
         	$x_2 = $cs[0];
@@ -193,15 +193,12 @@ final class Curve25519
         	$z_2 = $cs[0];
         	$z_3 = $cs[1];
         	$swap = $k_t;
-        	$this->out($x_2, "x_2 ");
-        	$this->out($x_3, "x_3 ");
-        	$this->out($z_2, "z_2 ");
-        	$this->out($z_3, "z_3 ");
+//         	$this->out($x_2, "x_2 ");
+//         	$this->out($x_3, "x_3 ");
+//         	$this->out($z_2, "z_2 ");
+//         	$this->out($z_3, "z_3 ");
         	$A = bcadd($x_2, $z_2);
-        	echo "A ".$A."\n";
         	$AA = bcpow($A, "2");
-        	echo "AA ".$AA."\n";
-        	    //$this->out($AA, "AA ");
         	$B = bcsub($x_2, $z_2);
         	$BB = bcpow($B, "2");
         	$E = bcsub($AA, $BB);
@@ -209,6 +206,15 @@ final class Curve25519
         	$D = bcsub($x_3, $z_3);
         	$DA = bcmul($D, $A);
         	$CB = bcmul($C, $B);
+        	echo "A ".$A."\n";
+        	echo "AA ".$AA."\n";
+        	echo "B ".$B."\n";
+        	echo "BB ".$BB."\n";
+        	echo "E ".$E."\n";
+        	echo "C ".$C."\n";
+        	echo "D ".$D."\n";
+        	echo "DA ".$DA."\n";
+        	echo "CB ".$CB."\n";
         	exit;
         	//         	x_3 = DA.add(CB).pow(2).mod(p);
 			$x_3 = bcadd($DA, $CB);
@@ -227,7 +233,7 @@ final class Curve25519
 			$z_2 = bcadd($AA, $z_2);
 			$z_2 = bcmul($E, $z_2);
 			$z_2 = bcmod($z_2, self::$p);
-			$this->out($z_2, " z_2");
+// 			$this->out($z_2, " z_2");
         }
 //         BigInteger[] cond2 = cswap(swap, x_2, x_3);
 //         x_2 = cond2[0];
@@ -263,12 +269,12 @@ final class Curve25519
         // $swap needs to be decimal:
         $dummy = bcsub("0", $swap);
         $dummy2 = $dummy;
-        echo "dummy ".$dummy."\n";
+//         echo "dummy ".$dummy."\n";
         // now switch everything to hex:
         $dummy = BCUtil::dec2hex($dummy, 32);
-        echo "dummy ".$dummy."\n";
+//         echo "dummy ".$dummy."\n";
         $dummy2 = BcUtil::bcdechex($dummy2);
-        echo "dummy2 ".$dummy2."\n";
+//         echo "dummy2 ".$dummy2."\n";
         $x_2 = BCUtil::dec2hex($x_2, 32);
         $x_3 = BCUtil::dec2hex($x_3, 32);
         $dummy = BcUtil::andHex($dummy, BcUtil::xorHex($x_2, $x_3, 32), 32); //$dummy.and(x_2.xor(x_3));
@@ -278,8 +284,8 @@ final class Curve25519
         // convert result back to decimal:
         $a[0] = BCUtil::hex2dec($a[0], 32);
         $a[1] = BCUtil::hex2dec($a[1], 32);
-        $this->out($a[0], "a[0] ");
-        $this->out($a[1], "a[1] ");
+//         $this->out($a[0], "a[0] ");
+//         $this->out($a[1], "a[1] ");
         return $a;
     }
     

@@ -32,6 +32,25 @@ function get_var_type($var)
 final class CurveTest extends TestCase
 {
     
+    public function testHexConversionException()
+    {
+        $this->expectException(Exception::class);
+        BcUtil::dec2hex("-129", 1);
+    }
+    
+    public function testHexConversionNeg() {
+
+        $this->assertEquals(1, BcUtil::isHexStringNegative("f0"));
+        $this->assertEquals(1, BcUtil::isHexStringNegative("ef"));
+        $this->assertEquals(0, BcUtil::isHexStringNegative("7f"));
+        for ($i = 0; $i < 200; $i++) {
+            $v = 0 - $i;
+            $v_str = "".$v;
+            if ($v < -128) $this->expectException(Exception::class);
+            BcUtil::dec2hex($v_str, 1);
+        }
+    }
+ 
     public function testHexConversion() {
         $h = BCUtil::dec2hex("1", 1);
         $this->assertEquals("01", $h);
@@ -41,6 +60,9 @@ final class CurveTest extends TestCase
         $this->assertEquals("ff", $h);
         $h = BCUtil::dec2hex("-2", 1);
         $this->assertEquals("fe", $h);
+        $h = BCUtil::dec2hex("-129", 2);
+        $this->assertEquals("ff7f", $h);
+        $this->expectException(Exception::class);
         $h = BCUtil::dec2hex("-200", 1);
     }
 
@@ -66,7 +88,8 @@ final class CurveTest extends TestCase
     {
         // conversions
         $this->assertEquals("000000", BcUtil::lengthHex("", 3));
-        $this->assertEquals("0000fe", BcUtil::lengthHex("fe", 3));
+        $this->assertEquals("fffffe", BcUtil::lengthHex("fe", 3));
+        $this->assertEquals("0000fe", BcUtil::lengthHex("00fe", 3));
         $this->assertEquals("000001", BcUtil::dec2hex("1", 3));
         $this->assertEquals("000010", BcUtil::dec2hex("16", 3));
         $d = "31029842492115040904895560451863089656472772604678260265531221036453811406496";

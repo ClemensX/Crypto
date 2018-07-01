@@ -1,5 +1,7 @@
 <?php
 
+use SebastianBergmann\Diff\Chunk;
+
 /** 
  * Bit manipulations for bcmath.
  * Each function takes length in bytes
@@ -18,7 +20,12 @@ class BcUtil
         }
     }
     
-    public static function bcdechex($dec) {
+    /**
+     * Convert positive decimal to hex
+     * @param String $dec
+     * @return string
+     */
+    private static function bcdechexPos(string $dec) : string {
         $last = bcmod($dec, "16");
         $remain = bcdiv(bcsub($dec, $last), "16");
         
@@ -29,6 +36,64 @@ class BcUtil
         }
     }
 
+    /**
+     * Convert positive decimal to hex and discard leading zeros
+     * @param string $dec
+     * @return string
+     */
+    private static function bcdechexPosNo0(string $dec) : string {
+        $hex = self::bcdechexPos($dec);
+        while ($hex[0] === "0" && strlen($hex) > 1) {
+            $hex = substr($hex, 1);
+        }
+        return $hex;
+    }
+    
+    private static $conv = array("0" => "f", "1" => "e", "2" => "d", "3" => "c", "4" => "b", "5" => "a", 
+        "6" => "9", "7" => "8", "8" => "7", "9" => "6", "a" => "5", "b" => "4", 
+        "c" => "3", "d" => "2", "e" => "1", "f" => "0"
+    );
+
+    private static function complement(string $char) : string {
+        return self::$conv[$char];
+    }
+    
+    /**
+     * Convert any positive or negative decimal to hex
+     * negative hex numbers use 2-complement representation
+     * returnes strings will be two chars per byte: 0f instead of f
+     * highest bit will be set for negative numbers
+     * @param String $dec
+     */
+    public static function bcdechex(string $dec) : string {
+        if ($dec[0] === '-') {
+            //throw new Exception("cannot handle neg");
+            $dec = bcmul($dec, "-1");
+            $dec = bcsub($dec, 1);
+            $hex = self::bcdechexPosNo0($dec);
+            // calc 2-complement of hex string
+            $complement = "";
+            for ($i = 0; $i < strlen($hex); $i++){
+                $complement = $complement.self::complement($hex[$i]);
+            }
+            if (strlen($complement) % 2 === 1) {
+                $complement = "f".$complement;
+            }
+            // if highest bit not set we have to prepend another ff:
+            if (!self::isHexStringNegative($complement)) {
+                $complement = "ff".$complement;
+            }
+            //echo "hex ".$hex." complement ".$complement."\n";
+            return $complement;
+        }
+        // positive number
+        $hex = self::bcdechexPosNo0($dec);
+        if (strlen($hex) % 2 === 1) {
+            $hex = "0".$hex;
+        }
+        return $hex;
+    }
+    
     /**
      * Check if hex string is negative. INput must be hey string with even count chars: 2 chars for one byte
      * @param string $hex
@@ -55,30 +120,46 @@ class BcUtil
     {
         $original = $hex;
         $is_negative = self::isHexStringNegative($hex);
-//         if ($is_negative )
-//             echo $hex." is neg\n";
-//         else
-//             echo $hex." is pos\n";
         $lenBytes = intdiv(strlen($hex)+1, 2);
         //echo "len ".$lenBytes."\n";
         // shorten:
         if ($lenBytes > $bytes) {
             if ($is_negative) {
-                $discardBytes = $lenBytes - $bytes;
-                $hex = substr($hex, $discardBytes * 2, $bytes * 2);
-                echo "short ".$hex."\n";
+                while ($lenBytes > $bytes) {
+                    $firstByte = substr($hex, 0, 2);
+                    if ($firstByte !== 'ff') {
+                        throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
+                    }
+                    $hex = substr($hex, 2);
+                    $lenBytes = intdiv(strlen($hex)+1, 2);
+                }
+                //echo "short ".$hex."\n";
                 if (!self::isHexStringNegative($hex)) {
                     // shortening left a positive number: fail!
                     throw new Exception("hex input could not be shortened to neg number: ".$original);
                 }
                 $lenBytes = intdiv(strlen($hex)+1, 2);
+            } else {
+                // positive number
+                while ($lenBytes > $bytes) {
+                    $firstByte = substr($hex, 0, 2);
+                    if ($firstByte !== '00') {
+                        throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
+                    }
+                    $hex = substr($hex, 2);
+                    $lenBytes = intdiv(strlen($hex)+1, 2);
+                }
             }
         }
         if ($lenBytes > $bytes) {
             throw new Exception("hex input too long: ".$hex);
         }
+        // make longer if needed
         while (strlen($hex) < $bytes*2) {
-            $hex = "0".$hex;
+            if ($is_negative)
+                $hex = "f".$hex;
+            else
+                $hex = "0".$hex;
         }
         return $hex;
     }
@@ -95,7 +176,6 @@ class BcUtil
     public static function dec2hex( string $dec, int $bytes) :string
     {
     	$hex = self::bcdechex($dec);
-    	echo "dec2hex ".$hex."\n";
     	return self::lengthHex($hex, $bytes);
     }
     
