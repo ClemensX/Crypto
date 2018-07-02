@@ -178,9 +178,6 @@ final class CurveTest extends TestCase
      * Test single curve25519 examples
      */
     public function testVectors() {
-//     	BigInteger scalar, uIn, uOut;
-//     	String scalarString, uInString, uOutString;
-    	
     	$crv = new Curve25519();
     	// first set of vectors
     	$scalarString = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4";
@@ -203,4 +200,76 @@ final class CurveTest extends TestCase
     	$this->assertEquals($uOutString, $crv->asLittleEndianHexString($uOut));
     }
     
+    /*
+     * String API tests
+     */
+    
+    /**
+     * Test curve25519 according to RFC 7748, section 5.2. test vectors
+     * Test single curve25519 examples
+     */
+    public function testVectorsString() {
+    	$crv = new Curve25519();
+    	// first set of vectors
+    	$scalarString = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4";
+    	$uInString    = "e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c";
+    	$uOutString   = "c3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552";
+    	
+    	$uOut = $crv->x25519Simple($scalarString,$uInString);
+    	$this->assertEquals($uOutString, $uOut);
+    	
+    	// second set of vectors
+    	$scalarString = "4b66e9d4d1b4673c5ad22691957d6af5c11b6421e0ea01d42ca4169e7918ba0d";
+    	$uInString    = "e5210f12786811d3f4b7959d0538ae2c31dbe7106fc03c3efc4cd549c715a493";
+    	$uOutString   = "95cbde9476e8907d7aade45cb4b873f88b595a68799fa152e6f8f7647aac7957";
+    	
+    	$uOut = $crv->x25519Simple($scalarString,$uInString);
+    	$this->assertEquals($uOutString, $uOut);
+    }
+    
+    /**
+     * Test curve25519 according to RFC 7748, section 5.2. test vectors
+     * Test calling curve25519 multiple times
+     */
+    public function testVectorsMultiString() {
+    	$crv = new Curve25519();
+    	$scalarString = "0900000000000000000000000000000000000000000000000000000000000000";
+    	$uInString    = "0900000000000000000000000000000000000000000000000000000000000000";
+    	$uOutString1    = "422c8e7a6227d7bca1350b3e2bb7279f7897b87bb6854b783c60e80311ae3079";
+    	$uOutString1000 = "684cf59ba83309552800ef566f2f4d3c1c3887c49360e3875f2eb94d99532c51";
+    	$uOutString1Mio = "7c3911e0ab2586fd864497297e575e6f3bc601c0883c30df5f4dd2d24f665424";
+    	
+    	// one iteration:
+    	$uOut = $crv->x25519Simple($scalarString,$uInString);
+    	$this->assertEquals($uOutString1, $uOut);
+    	
+    	// 1,000 iterations:
+    	$scalarStringIntermediate = $scalarString;
+    	$uInStringIntermediate = $uInString;
+    	for ($i = 1; $i <= 1000; $i++) {
+    		$uOut = $crv->x25519Simple($scalarStringIntermediate, $uInStringIntermediate);
+    		//crv.out(uOut, (i) + ":");
+    		$uInStringIntermediate = $scalarStringIntermediate;
+    		$scalarStringIntermediate = $uOut;
+    		if ($i % 25 === 0) {
+    			fwrite(STDERR, "done ".$i." / 1000\n");
+    		}
+    	}
+    	$this->assertEquals($uOutString1000, $scalarStringIntermediate);
+    	
+    	//if (disableLongRunningTest) return;
+    	//		// 1,000,000 iterations:
+    	//		scalar = crv.decodeScalar25519(crv.toByteArray(scalarString));
+    	//		scalarStringIntermediate = scalarString;
+    	//		uIn = crv.decodeUCoordinate(crv.toByteArray(uInString), 255);
+    	//		for (int i = 1; i <= 1000000; i++) {
+    	//			uOut = crv.x25519(scalar, uIn, 255);
+    	//			if(i % 1000 == 0)
+    		//			  crv.out(uOut, (i) + ":");
+    		//			uIn = crv.decodeUCoordinate(crv.toByteArray(scalarStringIntermediate), 255);
+    		//			scalarStringIntermediate = crv.asLittleEndianHexString(uOut);
+    		//			scalar = crv.decodeScalar25519(crv.toByteArray(scalarStringIntermediate));
+    		//		}
+    	//assertEquals(uOutString1Mio, scalarStringIntermediate);
+    }
 }

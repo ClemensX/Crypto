@@ -319,27 +319,12 @@ final class Curve25519
     	return $this->asString($r);
     }
     
-    // further php utils:
-/*    public static function bchexdec($hex) {
-    	if(strlen($hex) == 1) {
-    		return hexdec($hex);
-    	} else {
-    		$remain = substr($hex, 0, -1);
-    		$last = substr($hex, -1);
-    		return bcadd(bcmul(16, bchexdec($remain)), hexdec($last));
-    	}
+    public function x25519Simple( string $scalar, string $u): string {
+    	$scalar = self::decodeScalar25519(self::toByteArray($scalar));
+    	$uIn = self::decodeUCoordinate(self::toByteArray($u), 255);
+    	$uOut = self::x25519($scalar, $uIn, 255);
+    	return self::asLittleEndianHexString($uOut);
     }
-    
-    public static function bcdechex($dec) {
-    	$last = bcmod($dec, "16");
-    	$remain = bcdiv(bcsub($dec, $last), "16");
-    	
-    	if($remain == 0) {
-    		return dechex($last);
-    	} else {
-    		return self::bcdechex($remain).dechex($last);
-    	}
-    }*/
 }
 
 // $c = new Curve25519();
