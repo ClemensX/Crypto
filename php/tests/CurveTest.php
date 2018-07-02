@@ -172,19 +172,35 @@ final class CurveTest extends TestCase
         $outU = $crv->x25519($scalar1Decoded, $uDecoded, 255);
         $crv->out($outU, "output U:");
     }
+
+    /**
+     * Test curve25519 according to RFC 7748, section 5.2. test vectors
+     * Test single curve25519 examples
+     */
+    public function testVectors() {
+//     	BigInteger scalar, uIn, uOut;
+//     	String scalarString, uInString, uOutString;
+    	
+    	$crv = new Curve25519();
+    	// first set of vectors
+    	$scalarString = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4";
+    	$uInString    = "e6db6867583030db3594c1a424b15f7c726624ec26b3353b10a903a6d0ab1c4c";
+    	$uOutString   = "c3da55379de9c6908e94ea4df28d084f32eccf03491c71f754b4075577a28552";
+    	
+    	$scalar = $crv->decodeScalar25519($crv->toByteArray($scalarString));
+    	$uIn = $crv->decodeUCoordinate($crv->toByteArray($uInString), 255);
+    	$uOut = $crv->x25519($scalar, $uIn, 255);
+    	$this->assertEquals($uOutString, $crv->asLittleEndianHexString($uOut));
+    	
+    	// second set of vectors
+    	$scalarString = "4b66e9d4d1b4673c5ad22691957d6af5c11b6421e0ea01d42ca4169e7918ba0d";
+    	$uInString    = "e5210f12786811d3f4b7959d0538ae2c31dbe7106fc03c3efc4cd549c715a493";
+    	$uOutString   = "95cbde9476e8907d7aade45cb4b873f88b595a68799fa152e6f8f7647aac7957";
+    	
+    	$scalar = $crv->decodeScalar25519($crv->toByteArray($scalarString));
+    	$uIn = $crv->decodeUCoordinate($crv->toByteArray($uInString), 255);
+    	$uOut = $crv->x25519($scalar, $uIn, 255);
+    	$this->assertEquals($uOutString, $crv->asLittleEndianHexString($uOut));
+    }
     
-    // public function testCannotBeCreatedFromInvalidEmailAddress(): void
-    // {
-    // $this->expectException(InvalidArgumentException::class);
-    //
-    // Curve25519::fromString('invalid');
-    // }
-    //
-    // public function testCanBeUsedAsString(): void
-    // {
-    // $this->assertEquals(
-    // 'user@example.com',
-    // Curve25519::fromString('user@example.com')
-    // );
-    // }
 }
