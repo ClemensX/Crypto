@@ -1,8 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-require_once 'C:\dev\repos\Crypto\php\src\bcutil.php';
-require_once 'C:\dev\repos\Crypto\php\src\curve25519.php';
+// require_once 'C:\dev\repos\Crypto\php\src\bcutil.php';
+// require_once 'C:\dev\repos\Crypto\php\src\curve25519.php';
+require_once 'D:\msvc\dev\repos\Crypto\php\src\bcutil.php';
+require_once 'D:\msvc\dev\repos\Crypto\php\src\curve25519.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -62,6 +64,12 @@ final class CurveTest extends TestCase
         $this->assertEquals("fe", $h);
         $h = BCUtil::dec2hex("-129", 2);
         $this->assertEquals("ff7f", $h);
+        
+        $h = BCUtil::bcdechex("270789746419331941377545078918457577159845530448005805937855319561987125569");
+        $this->assertEquals("9942f5edfb5cb4d58cdd9a573f118f2eaf04a9260e97f52f3adb0584d37141", $h);
+        $h = BCUtil::dec2hex("270789746419331941377545078918457577159845530448005805937855319561987125569", 32);
+        $this->assertEquals("009942f5edfb5cb4d58cdd9a573f118f2eaf04a9260e97f52f3adb0584d37141", $h);
+        
         $this->expectException(Exception::class);
         $h = BCUtil::dec2hex("-200", 1);
     }

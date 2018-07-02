@@ -184,7 +184,8 @@ final class Curve25519
 			$k_t = BcUtil::andDec($k_t, "1", 32); 
 // 			$this->out($k_t, "k_t and ");
 			$swap = BcUtil::xorDec($swap, $k_t, 32);
-// 			$this->out($swap, "swap xor ");
+//			echo "swap ".$swap."\n";
+			// 			$this->out($swap, "swap xor ");
 			//echo "t k_t swap ". $t. " " .self::bcdechex($k_t) . " " .self::bcdechex($swap)."\n";
 			$cs = $this->cswapDec($swap, $x_2, $x_3);
         	$x_2 = $cs[0];
@@ -223,6 +224,9 @@ final class Curve25519
 			$z_2 = bcadd($AA, $z_2);
 			$z_2 = bcmul($E, $z_2);
 			$z_2 = bcmod($z_2, self::$p);
+			echo "k_t ".$k_t."\n";
+			//echo "cs 0 ".$cs[0]."\n";
+			
 			echo "A ".$A."\n";
 			echo "AA ".$AA."\n";
 			echo "B ".$B."\n";
@@ -236,7 +240,8 @@ final class Curve25519
 			echo "z_3 ".$z_3."\n";
 			echo "x_2 ".$x_2."\n";
 			echo "z_2 ".$z_2."\n";
-			exit;
+			echo " t = ".$t."\n";
+			if ($t < 230)exit;
 			// 			$this->out($z_2, " z_2");
         }
 //         BigInteger[] cond2 = cswap(swap, x_2, x_3);
@@ -275,17 +280,27 @@ final class Curve25519
         $dummy2 = $dummy;
 //         echo "dummy ".$dummy."\n";
         // now switch everything to hex:
+        //echo "cswap dummy ".$dummy."\n";
         $dummy = BCUtil::dec2hex($dummy, 32);
-//         echo "dummy ".$dummy."\n";
-        $dummy2 = BcUtil::bcdechex($dummy2);
+        //echo "cswap dummy ".$dummy."\n";
+        //$dummy2 = BcUtil::bcdechex($dummy2);
 //         echo "dummy2 ".$dummy2."\n";
         $x_2 = BCUtil::dec2hex($x_2, 32);
+        echo "cswap x_3 ".$x_3."\n";
         $x_3 = BCUtil::dec2hex($x_3, 32);
+        $temp = BcUtil::xorHex($x_2, $x_3, 32);
+        echo "cswap x_2 ".$x_2."\n";
+        echo "cswap x_3 ".$x_3."\n";
+        echo "cswap x_2 xor x_3 ".$temp."\n";
         $dummy = BcUtil::andHex($dummy, BcUtil::xorHex($x_2, $x_3, 32), 32); //$dummy.and(x_2.xor(x_3));
         $a = [BcUtil::xorHex($x_2, $dummy, 32),
               BcUtil::xorHex($x_3, $dummy, 32)
         ];
         // convert result back to decimal:
+//         echo "cswap x_2 ".$x_2."\n";
+//         echo "cswap dummy ".$dummy."\n";
+//         echo "cswap a 0 ".$a[0]."\n";
+        //echo "cswap a 1 ".$a[1]."\n";
         $a[0] = BCUtil::hex2dec($a[0], 32);
         $a[1] = BCUtil::hex2dec($a[1], 32);
 //         $this->out($a[0], "a[0] ");
