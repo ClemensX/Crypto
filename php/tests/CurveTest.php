@@ -96,10 +96,12 @@ final class CurveTest extends TestCase
     {
         // conversions
         $this->assertEquals("000000", BcUtil::lengthHex("", 3));
-        $this->assertEquals("fffffe", BcUtil::lengthHex("fe", 3));
+        //$this->assertEquals("fffffe", BcUtil::lengthHex("fe", 3));
+        $this->assertEquals("0000fe", BcUtil::lengthHex("fe", 3));
         $this->assertEquals("0000fe", BcUtil::lengthHex("00fe", 3));
         $this->assertEquals("000001", BcUtil::dec2hex("1", 3));
         $this->assertEquals("000010", BcUtil::dec2hex("16", 3));
+        $this->assertEquals("fffffe", BcUtil::dec2hex("-2", 3));
         $d = "31029842492115040904895560451863089656472772604678260265531221036453811406496";
         $this->assertEquals("449a44ba44226a50185afcc10a4c1462dd5e46824b15163b9d7c52f06be346a0", BcUtil::dec2hex($d, 32));
         $d = bcadd($d, "1");

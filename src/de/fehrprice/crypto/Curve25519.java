@@ -184,7 +184,7 @@ public class Curve25519 {
 			swap = swap.xor(k_t);
 			//out(swap, "swap xor");
 			//System.out.println("t k_t swap " + t + " " + k_t.toString(16) + " " + swap.toString(16) );
-			System.out.println("swap " + swap);
+//			System.out.println("swap " + swap);
 			BigInteger[] cs = cswap(swap, x_2, x_3);
 			x_2 = cs[0];
 			x_3 = cs[1];
@@ -210,23 +210,23 @@ public class Curve25519 {
 			z_3 = x_1.multiply(DA.subtract(CB).pow(2)).mod(p);
 			x_2 = AA.multiply(BB).mod(p);
 			z_2 = E.multiply(AA.add(a24.multiply(E))).mod(p);
-			System.out.println("k_t " + k_t);
-			
-			System.out.println("A " + A);
-			System.out.println("AA " + AA);
-			System.out.println("B " + B);
-			System.out.println("BB " + BB);
-			System.out.println("E " + E);
-			System.out.println("C " + C);
-			System.out.println("D " + D);
-			System.out.println("DA " + DA);
-			System.out.println("CB " + CB);
-			System.out.println("x_3 " + x_3);
-			System.out.println("z_3 " + z_3);
-			System.out.println("x_2 " + x_2);
-			System.out.println("z_2 " + z_2);
-			System.out.println(" t " + t);
-			if (t < 230) System.exit(0);
+//			System.out.println("k_t " + k_t);
+//			
+//			System.out.println("A " + A);
+//			System.out.println("AA " + AA);
+//			System.out.println("B " + B);
+//			System.out.println("BB " + BB);
+//			System.out.println("E " + E);
+//			System.out.println("C " + C);
+//			System.out.println("D " + D);
+//			System.out.println("DA " + DA);
+//			System.out.println("CB " + CB);
+//			System.out.println("x_3 " + x_3);
+//			System.out.println("z_3 " + z_3);
+//			System.out.println("x_2 " + x_2);
+//			System.out.println("z_2 " + z_2);
+//			System.out.println(" t " + t);
+			//if (t < 100) System.exit(0);
 //			out(z_2, " z_2 ");
 			}
 		BigInteger[] cond2 = cswap(swap, x_2, x_3);
@@ -249,10 +249,10 @@ public class Curve25519 {
 		//System.out.println(swap);
 		BigInteger dummy = BigInteger.ZERO.subtract(swap);
 //		out(dummy, "dummy hex");
-		System.out.println("cswap x_3 " + x_3);
-		System.out.println("cswap x_2 " + x_2.toString(16));
-		System.out.println("cswap x_3 " + x_3.toString(16));
-		System.out.println("cswap x_2 xor x_3 " + x_2.xor(x_3).toString(16));
+//		System.out.println("cswap x_3 " + x_3);
+//		System.out.println("cswap x_2 " + x_2.toString(16));
+//		System.out.println("cswap x_3 " + x_3.toString(16));
+//		System.out.println("cswap x_2 xor x_3 " + x_2.xor(x_3).toString(16));
 		dummy = dummy.and(x_2.xor(x_3));
 		BigInteger[] r = new BigInteger[2];
 		r[0] = x_2.xor(dummy);

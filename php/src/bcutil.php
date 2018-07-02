@@ -108,7 +108,7 @@ class BcUtil
     
     /**
      * check byte length, throws exception if wrong byte length
-     * auto adjust length: if more bytes needed: sign is prepended until byte nuber is ok
+     * auto adjust length: if more bytes needed: 0 is prepended until byte nuber is ok
      * if less bytes needed: if highest bit set (negative): try shortening while 0xff byte found
      *   if highest bit not set (positive number): try shortening while zero byte found
      * @param string $hex
@@ -118,50 +118,94 @@ class BcUtil
      */
     public static function lengthHex( string $hex, int $bytes) :string
     {
-        $original = $hex;
-        $is_negative = self::isHexStringNegative($hex);
-        $lenBytes = intdiv(strlen($hex)+1, 2);
-        //echo "len ".$lenBytes."\n";
-        // shorten:
-        if ($lenBytes > $bytes) {
-            if ($is_negative) {
-                while ($lenBytes > $bytes) {
-                    $firstByte = substr($hex, 0, 2);
-                    if ($firstByte !== 'ff') {
-                        throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
-                    }
-                    $hex = substr($hex, 2);
-                    $lenBytes = intdiv(strlen($hex)+1, 2);
-                }
-                //echo "short ".$hex."\n";
-                if (!self::isHexStringNegative($hex)) {
-                    // shortening left a positive number: fail!
-                    throw new Exception("hex input could not be shortened to neg number: ".$original);
-                }
-                $lenBytes = intdiv(strlen($hex)+1, 2);
-            } else {
-                // positive number
-                while ($lenBytes > $bytes) {
-                    $firstByte = substr($hex, 0, 2);
-                    if ($firstByte !== '00') {
-                        throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
-                    }
-                    $hex = substr($hex, 2);
-                    $lenBytes = intdiv(strlen($hex)+1, 2);
-                }
-            }
-        }
-        if ($lenBytes > $bytes) {
-            throw new Exception("hex input too long: ".$hex);
-        }
-        // make longer if needed
-        while (strlen($hex) < $bytes*2) {
-            if ($is_negative)
-                $hex = "f".$hex;
-            else
-                $hex = "0".$hex;
-        }
-        return $hex;
+    	$original = $hex;
+    	// make longer if needed, we do not carry the sign to left while making longer!
+    	while (strlen($hex) < $bytes*2) {
+    		$hex = "0".$hex;
+    	}
+    	$is_negative = self::isHexStringNegative($hex);
+    	$lenBytes = intdiv(strlen($hex)+1, 2);
+    	//echo "len ".$lenBytes."\n";
+    	// shorten:
+    	if ($lenBytes > $bytes) {
+    		if ($is_negative) {
+    			while ($lenBytes > $bytes) {
+    				$firstByte = substr($hex, 0, 2);
+    				if ($firstByte !== 'ff') {
+    					throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
+    				}
+    				$hex = substr($hex, 2);
+    				$lenBytes = intdiv(strlen($hex)+1, 2);
+    			}
+    			//echo "short ".$hex."\n";
+    			if (!self::isHexStringNegative($hex)) {
+    				// shortening left a positive number: fail!
+    				throw new Exception("hex input could not be shortened to neg number: ".$original);
+    			}
+    			$lenBytes = intdiv(strlen($hex)+1, 2);
+    		} else {
+    			// positive number
+    			while ($lenBytes > $bytes) {
+    				$firstByte = substr($hex, 0, 2);
+    				if ($firstByte !== '00') {
+    					throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
+    				}
+    				$hex = substr($hex, 2);
+    				$lenBytes = intdiv(strlen($hex)+1, 2);
+    			}
+    		}
+    	}
+    	if ($lenBytes > $bytes) {
+    		throw new Exception("hex input too long: ".$hex);
+    	}
+    	return $hex;
+    }
+    
+    public static function lengthHexWithSign( string $hex, int $bytes, bool $is_negative) :string
+    {
+    	$original = $hex;
+    	// make longer if needed, we do not carry the sign to left while making longer!
+    	while (strlen($hex) < $bytes*2) {
+    	  if ($is_negative) 
+            $hex = "f".$hex;
+          else
+            $hex = "0".$hex;
+    	}
+    	$lenBytes = intdiv(strlen($hex)+1, 2);
+    	//echo "len ".$lenBytes."\n";
+    	// shorten:
+    	if ($lenBytes > $bytes) {
+    		if ($is_negative) {
+    			while ($lenBytes > $bytes) {
+    				$firstByte = substr($hex, 0, 2);
+    				if ($firstByte !== 'ff') {
+    					throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
+    				}
+    				$hex = substr($hex, 2);
+    				$lenBytes = intdiv(strlen($hex)+1, 2);
+    			}
+    			//echo "short ".$hex."\n";
+    			if (!self::isHexStringNegative($hex)) {
+    				// shortening left a positive number: fail!
+    				throw new Exception("hex input could not be shortened to neg number: ".$original);
+    			}
+    			$lenBytes = intdiv(strlen($hex)+1, 2);
+    		} else {
+    			// positive number
+    			while ($lenBytes > $bytes) {
+    				$firstByte = substr($hex, 0, 2);
+    				if ($firstByte !== '00') {
+    					throw new Exception("hex input could not be shortened to ".$bytes." bytes: ".$original);
+    				}
+    				$hex = substr($hex, 2);
+    				$lenBytes = intdiv(strlen($hex)+1, 2);
+    			}
+    		}
+    	}
+    	if ($lenBytes > $bytes) {
+    		throw new Exception("hex input too long: ".$hex);
+    	}
+    	return $hex;
     }
     
     
@@ -175,8 +219,10 @@ class BcUtil
     
     public static function dec2hex( string $dec, int $bytes) :string
     {
+    	$is_neg = ($dec[0] === '-') ? true : false;
+    		
     	$hex = self::bcdechex($dec);
-    	return self::lengthHex($hex, $bytes);
+    	return self::lengthHexWithSign($hex, $bytes, $is_neg);
     }
     
     public static function dec2array( string $dec, int $bytes) :array

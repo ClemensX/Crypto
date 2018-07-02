@@ -224,24 +224,22 @@ final class Curve25519
 			$z_2 = bcadd($AA, $z_2);
 			$z_2 = bcmul($E, $z_2);
 			$z_2 = bcmod($z_2, self::$p);
-			echo "k_t ".$k_t."\n";
-			//echo "cs 0 ".$cs[0]."\n";
-			
-			echo "A ".$A."\n";
-			echo "AA ".$AA."\n";
-			echo "B ".$B."\n";
-			echo "BB ".$BB."\n";
-			echo "E ".$E."\n";
-			echo "C ".$C."\n";
-			echo "D ".$D."\n";
-			echo "DA ".$DA."\n";
-			echo "CB ".$CB."\n";
-			echo "x_3 ".$x_3."\n";
-			echo "z_3 ".$z_3."\n";
-			echo "x_2 ".$x_2."\n";
-			echo "z_2 ".$z_2."\n";
-			echo " t = ".$t."\n";
-			if ($t < 230)exit;
+// 			echo "k_t ".$k_t."\n";
+// 			echo "A ".$A."\n";
+// 			echo "AA ".$AA."\n";
+// 			echo "B ".$B."\n";
+// 			echo "BB ".$BB."\n";
+// 			echo "E ".$E."\n";
+// 			echo "C ".$C."\n";
+// 			echo "D ".$D."\n";
+// 			echo "DA ".$DA."\n";
+// 			echo "CB ".$CB."\n";
+// 			echo "x_3 ".$x_3."\n";
+// 			echo "z_3 ".$z_3."\n";
+// 			echo "x_2 ".$x_2."\n";
+// 			echo "z_2 ".$z_2."\n";
+// 			echo " t = ".$t."\n";
+			//if ($t < 100)exit;
 			// 			$this->out($z_2, " z_2");
         }
 //         BigInteger[] cond2 = cswap(swap, x_2, x_3);
@@ -286,12 +284,12 @@ final class Curve25519
         //$dummy2 = BcUtil::bcdechex($dummy2);
 //         echo "dummy2 ".$dummy2."\n";
         $x_2 = BCUtil::dec2hex($x_2, 32);
-        echo "cswap x_3 ".$x_3."\n";
+//         echo "cswap x_3 ".$x_3."\n";
         $x_3 = BCUtil::dec2hex($x_3, 32);
         $temp = BcUtil::xorHex($x_2, $x_3, 32);
-        echo "cswap x_2 ".$x_2."\n";
-        echo "cswap x_3 ".$x_3."\n";
-        echo "cswap x_2 xor x_3 ".$temp."\n";
+//         echo "cswap x_2 ".$x_2."\n";
+//         echo "cswap x_3 ".$x_3."\n";
+//         echo "cswap x_2 xor x_3 ".$temp."\n";
         $dummy = BcUtil::andHex($dummy, BcUtil::xorHex($x_2, $x_3, 32), 32); //$dummy.and(x_2.xor(x_3));
         $a = [BcUtil::xorHex($x_2, $dummy, 32),
               BcUtil::xorHex($x_3, $dummy, 32)
