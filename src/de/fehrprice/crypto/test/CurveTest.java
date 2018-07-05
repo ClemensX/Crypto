@@ -9,6 +9,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import de.fehrprice.crypto.AES;
 import de.fehrprice.crypto.Curve25519;
 
 public class CurveTest {
@@ -139,6 +140,36 @@ public class CurveTest {
 		assertEquals(secret_k, secret);
 		secret = crv.x25519(b, alicePublicKey);
 		assertEquals(secret_k, secret);
+	}
+
+	@Test
+	public void TestEncryption() {
+		AES aes = new AES();
+		// first we need a public key: (no need for prime, just a random number):
+		byte[] privKeyBytes = aes.random(32);
+		// convert to hex string
+		String privKey = aes.toString(privKeyBytes);
+		System.out.println("Private Key: " + privKey);
+		
+		// compute public key
+		String uBasePoint     = "0900000000000000000000000000000000000000000000000000000000000000";
+		String pubKey = crv.x25519(privKey, uBasePoint);
+		System.out.println("Public Key: " + pubKey);
+		
+		// prepare data to encrypt:
+		String plainData = "Geheim$74!";
+		byte[] dataBytes = plainData.getBytes();
+		dataBytes = aes.fixByteArrayLength(32, dataBytes);
+		String dataHexString = aes.toString(dataBytes);
+		System.out.println("data hex string: " + dataHexString);
+		
+		// encrypt data
+		String encrypted = crv.x25519(privKey, dataHexString);
+		System.out.println("Encrypted: " + encrypted);
+		
+		// decrypt:
+		String decrypted = crv.x25519(encrypted, pubKey);
+		System.out.println("Decrypted: " + decrypted);
 	}
 
 	/* 

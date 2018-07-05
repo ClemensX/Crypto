@@ -606,6 +606,18 @@ public class AES {
 		System.arraycopy(myseed, 0, seed, 0, 32);
 	}
 	
+	public byte[] fixByteArrayLength(int newLen, byte[] oldarray) {
+		if (oldarray.length > newLen) {
+			throw new NumberFormatException(" source array too big. Should be <= " + newLen + " bytes");
+		}
+		byte newArray[] = new byte[newLen];
+		System.arraycopy(oldarray, 0, newArray, 0, oldarray.length);
+		for (int i = oldarray.length; i < newLen; i++) {
+			newArray[i] = 0;
+		}
+		return newArray;
+	}
+	
 
 	/**
 	 * generate 16 new random bytes and put them in the first half of the seed buffer
