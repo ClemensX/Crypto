@@ -1,10 +1,10 @@
 <?php
 declare(strict_types = 1);
 
-// require_once 'C:\dev\repos\Crypto\php\src\bcutil.php';
-// require_once 'C:\dev\repos\Crypto\php\src\curve25519.php';
-require_once 'D:\msvc\dev\repos\Crypto\php\src\bcutil.php';
-require_once 'D:\msvc\dev\repos\Crypto\php\src\curve25519.php';
+require_once 'C:\dev\repos\Crypto\php\src\bcutil.php';
+require_once 'C:\dev\repos\Crypto\php\src\curve25519.php';
+// require_once 'D:\msvc\dev\repos\Crypto\php\src\bcutil.php';
+// require_once 'D:\msvc\dev\repos\Crypto\php\src\curve25519.php';
 
 use PHPUnit\Framework\TestCase;
 
@@ -33,6 +33,7 @@ function get_var_type($var)
 // call like this: php phpunit.phar --bootstrap src/autoload.php --testdox tests
 final class CurveTest extends TestCase
 {
+    public static $DisableLongRunningTest = TRUE;
     
     public function testHexConversionException()
     {
@@ -242,20 +243,22 @@ final class CurveTest extends TestCase
     	// one iteration:
     	$uOut = $crv->x25519Simple($scalarString,$uInString);
     	$this->assertEquals($uOutString1, $uOut);
-    	
-    	// 1,000 iterations:
-    	$scalarStringIntermediate = $scalarString;
-    	$uInStringIntermediate = $uInString;
-    	for ($i = 1; $i <= 1000; $i++) {
-    		$uOut = $crv->x25519Simple($scalarStringIntermediate, $uInStringIntermediate);
-    		//crv.out(uOut, (i) + ":");
-    		$uInStringIntermediate = $scalarStringIntermediate;
-    		$scalarStringIntermediate = $uOut;
-    		if ($i % 25 === 0) {
-    			fwrite(STDERR, "done ".$i." / 1000\n");
-    		}
+
+    	if (!self::$DisableLongRunningTest) {
+        	// 1,000 iterations:
+        	$scalarStringIntermediate = $scalarString;
+        	$uInStringIntermediate = $uInString;
+        	for ($i = 1; $i <= 1000; $i++) {
+        		$uOut = $crv->x25519Simple($scalarStringIntermediate, $uInStringIntermediate);
+        		//crv.out(uOut, (i) + ":");
+        		$uInStringIntermediate = $scalarStringIntermediate;
+        		$scalarStringIntermediate = $uOut;
+        		if ($i % 25 === 0) {
+        			fwrite(STDERR, "done ".$i." / 1000\n");
+        		}
+        	}
+        	$this->assertEquals($uOutString1000, $scalarStringIntermediate);
     	}
-    	$this->assertEquals($uOutString1000, $scalarStringIntermediate);
     	
     	//if (disableLongRunningTest) return;
     	//		// 1,000,000 iterations:
