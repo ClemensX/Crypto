@@ -6,7 +6,9 @@ import java.math.BigInteger;
 
 /**
  * Curve25519 implementation.
- * https://tools.ietf.org/html/rfc7748
+ * 
+ * x25519: http://www.rfc-editor.org/info/rfc7748
+ * EdDSA: http://www.rfc-editor.org/info/rfc8032
  *
  */
 public class Curve25519 {
