@@ -249,6 +249,73 @@ public class CryptoTest {
 		assertEquals(input, dec);
 	}
 	
+/*
+not able to encrypt 2 bytes with RSA 16 bits
+not able to encrypt 4 bytes with RSA 32 bits
+not able to encrypt 8 bytes with RSA 64 bits
+not able to encrypt 16 bytes with RSA 128 bits
+not able to encrypt 32 bytes with RSA 256 bits
+not able to encrypt 64 bytes with RSA 512 bits
+not able to encrypt 128 bytes with RSA 1024 bits
+not able to encrypt 256 bytes with RSA 2048 bits
+not able to encrypt 512 bytes with RSA 4096 bits
+*/
+	//@Test disabled for long runtime, see result in list above
+	public void testRSASigningLength() {
+		// first do some key length tests
+		int keyLength[] = {16,32,64,128,256,512,1024,2048,4096};
+		AES aes = new AES();
+		for (int klen : keyLength) {
+			// check key length and encryption 
+			RSA rsa = new RSA();
+			rsa.generateKeys(klen);
+			int messageSize = 1;
+			boolean ok = true;
+			while (ok) {
+				try {
+					byte[] msg = aes.random(messageSize);
+					assertEquals(messageSize, msg.length);
+					for (int i = 0; i < msg.length; i++) {
+						msg[i] = (byte)0xff;
+					}
+					BigInteger enc = rsa.encrypt(msg);
+					messageSize++;
+				} catch (NumberFormatException e) {
+					ok = false;
+					System.out.println("not able to encrypt " + messageSize + " bytes with RSA " + klen + " bits");
+				}
+			}
+		}
+	}
+	
+	@Test
+	public void testRSASigning() {
+		String secret_k = "4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742";
+		RSA rsa = new RSA();
+		AES aes = new AES();
+		rsa.generateKeys(1024);
+		String alice_private = rsa.keys.d.toString(16);
+		String alice_public = rsa.keys.n.toString(16);
+
+		// we want do sign 64 byte SHA-512 hashes:
+		String message = secret_k + "|mode=Init|" + alice_public; 
+		
+		// compute msg hash:
+		SHA sha = new SHA();
+		byte[] hash = sha.sha512(message);
+		assertEquals(64, hash.length);
+		
+		// encrypt hash with private key:
+		BigInteger bigenc = rsa.encrypt(hash);
+		String enc = bigenc.toString(16);
+		
+		String fullMessageWithSignature = message + "|" + enc;
+		System.out.println("fullMessageWithSignature " + fullMessageWithSignature);
+		
+		// assume fullMessageWithSignature was transmitted
+		// verify message:
+	}
+	
 	@Test
 	public void testBigIntegerConversions() {
 		AES aes = new AES();
