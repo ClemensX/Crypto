@@ -7,6 +7,7 @@ import static org.junit.Assert.fail;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
+import java.util.regex.Pattern;
 
 import org.junit.Test;
 
@@ -294,8 +295,13 @@ not able to encrypt 512 bytes with RSA 4096 bits
 		RSA rsa = new RSA();
 		AES aes = new AES();
 		rsa.generateKeys(1024);
-		String alice_private = rsa.keys.d.toString(16);
 		String alice_public = rsa.keys.n.toString(16);
+		String alice_private = rsa.keys.d.toString(16);
+		String e_fixed = rsa.keys.e.toString(16);
+		
+		System.out.println("Modul n (public key): " + alice_public);
+		System.out.println("  private key d: " + alice_private);
+		System.out.println("  fixed e: " + e_fixed);
 
 		// we want do sign 64 byte SHA-512 hashes:
 		String message = secret_k + "|mode=Init|" + alice_public; 
@@ -305,15 +311,26 @@ not able to encrypt 512 bytes with RSA 4096 bits
 		byte[] hash = sha.sha512(message);
 		assertEquals(64, hash.length);
 		
-		// encrypt hash with private key:
-		BigInteger bigenc = rsa.encrypt(hash);
-		String enc = bigenc.toString(16);
+		// encrypt hash with static encryption method:
+		String hashString = aes.toString(hash);
+		System.out.println(" message hash: " + hashString);
+		String bigencString = RSA.encryptMessageWithPrivateKey(hashString, alice_private, alice_public);
 		
-		String fullMessageWithSignature = message + "|" + enc;
+		String fullMessageWithSignature = message + "|" + bigencString;
 		System.out.println("fullMessageWithSignature " + fullMessageWithSignature);
 		
 		// assume fullMessageWithSignature was transmitted
 		// verify message:
+		String[] parts = fullMessageWithSignature.split(Pattern.quote("|"));
+		assertEquals(4,parts.length);
+		
+		String encryptedHex = parts[3];
+		String publicKey = parts[2];
+		assertEquals(bigencString, encryptedHex);
+		assertEquals(alice_public, publicKey);
+		String decryptedHex = RSA.decryptMessageWithPublicKey(encryptedHex, publicKey);
+		System.out.println("decrypted message: " + decryptedHex);
+		assertEquals(hashString, decryptedHex);
 	}
 	
 	@Test

@@ -16,9 +16,8 @@ public class RSA {
 	public class KeyPair {
 		
 		public BigInteger p, q, n, dP, dQ, qInv, phi, e, d;
-//		public KeyPair(BigInteger p, BigInteger q, BigInteger n, BigInteger dP,
-//				BigInteger dQ, BigInteger qInv) {
-//		}
+		// public key is (n, e) private key is (n, d). 
+		// n is the big multiply (public), e is fixed to 65537
 		
 	}
 
@@ -26,13 +25,15 @@ public class RSA {
 
 	public KeyPair keys = new KeyPair();
 	
+	private static final BigInteger global_e = BigInteger.valueOf(65537L);
+	
 	public void generateKeys(int bitcount) {
 		if (bitcount % 16 != 0 || bitcount < 16) {
 			throw new NumberFormatException("key bitcount not multiple of 16 or too small");
 		}
 		int n_bitlen = 0;
 		BigInteger gcd;
-		keys.e = BigInteger.valueOf(65537L);
+		keys.e = global_e;
 		do {
 			keys.p = getRandomPrime(bitcount/2);
 			keys.q = getRandomPrime(bitcount/2);
@@ -44,7 +45,7 @@ public class RSA {
 			}
 			keys.n = keys.p.multiply(keys.q);
 			n_bitlen = keys.n.bitLength();
-			keys.n = keys.p.multiply(keys.q);
+			//keys.n = keys.p.multiply(keys.q);
 			keys.phi = keys.p.subtract(BigInteger.ONE).multiply(keys.q.subtract(BigInteger.ONE));
 			gcd = keys.phi.gcd(keys.e);
 		} while (n_bitlen < bitcount && gcd.compareTo(BigInteger.ONE) == 0);
@@ -93,16 +94,28 @@ public class RSA {
 		return null;
 	}
 	
+	/**
+	 * Encrypt with public key
+	 * @param string
+	 * @return
+	 */
+	@Deprecated
 	public BigInteger encrypt(String string) {
 		return encrypt(string.getBytes());
 	}
 	
+	/**
+	 * Encrypt with public key
+	 * @param r
+	 * @return
+	 */
 	public String decrypt(BigInteger r) {
 		String res = new String(decryptToByteArray(r));
 		//System.out.println("decrypt: " + res);
 		return res;
 	}
 	
+	@Deprecated
 	public BigInteger encrypt(byte[] message) {
 		BigInteger m = encodeToBigInteger(message);
 		if (m.compareTo(keys.n) > 0) {
@@ -119,7 +132,6 @@ public class RSA {
 		return decoded;
 	}
 
-	// probably wrong TODO
 	public BigInteger encodeToBigInteger(byte[] message) {
 		byte[] encoded = new byte[message.length + 1];
 		encoded[0] = 01;
@@ -127,7 +139,6 @@ public class RSA {
 		return new BigInteger(encoded);
 	}
 
-	// probably wrong TODO
 	public byte[] decodeFromBigInteger(BigInteger m) {
 		byte[] encoded = m.toByteArray();
 		byte[] decoded = new byte[encoded.length-1];
@@ -147,20 +158,6 @@ public class RSA {
 		System.arraycopy(encoded2, 0, decoded, 0, decoded.length);
 		return decoded;
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 	// public exponent to use
     private BigInteger publicExponent;
@@ -227,5 +224,61 @@ public class RSA {
 //	}
 		return null;
  	}
+
+ 	public static BigInteger hexStringToBigInteger(String hexString) {
+//		RSA rsa = new RSA();
+//		AES aes = new AES();
+//		byte[] bytes = aes.toByteArray(hexString);
+//		return rsa.encodeToBigInteger(bytes);
+ 		return new BigInteger(hexString, 16);
+ 	}
+ 	
+ 	public static String bigIntegerToHexString(BigInteger big) {
+//		RSA rsa = new RSA();
+//		AES aes = new AES();
+//		return aes.toString(rsa.decodeFromBigInteger(big));
+ 		return big.toString(16);
+ 	}
+ 	
+	/**
+	 * Encrypt message with private key.
+	 * All input and output is with hex strings!
+	 * @param message
+	 * @param private_d 
+	 * @param alice_private
+	 * @return
+	 */
+	public static String encryptMessageWithPrivateKey(String message, String private_d, String public_n) {
+		AES aes = new AES();
+		RSA rsa = new RSA();
+		rsa.keys.n = hexStringToBigInteger(public_n);
+		rsa.keys.d = hexStringToBigInteger(private_d);
+		BigInteger m = hexStringToBigInteger(message);
+
+		if (m.compareTo(rsa.keys.n) > 0) {
+			throw new NumberFormatException((message.length()/2 * 8) + " bit message too big. Should be <= " + (rsa.keys.n.bitLength()-1));
+		}
+		BigInteger r = m.modPow(rsa.keys.d, rsa.keys.n);
+		System.out.println("encrypt: " + r.toString(16));
+		return bigIntegerToHexString(r);
+	}
+
+	/**
+	 * Decrypt message with public key.
+	 * All input and output is with hex strings!
+	 * @param encryptedHex
+	 * @param publicKey
+	 * @return
+	 */
+	public static String decryptMessageWithPublicKey(String encryptedHexMsg, String publicKey) {
+		AES aes = new AES();
+		RSA rsa = new RSA();
+		BigInteger c = hexStringToBigInteger(encryptedHexMsg);
+		System.out.println("dec->enc: " + c.toString(16));
+		rsa.keys.n = hexStringToBigInteger(publicKey);
+		rsa.keys.e = global_e;
+		BigInteger decrypted = c.modPow(rsa.keys.e, rsa.keys.n);
+		return bigIntegerToHexString(decrypted);
+	}
 
 }
