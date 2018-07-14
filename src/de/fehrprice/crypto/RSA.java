@@ -133,17 +133,11 @@ public class RSA {
 	}
 
 	public BigInteger encodeToBigInteger(byte[] message) {
-		byte[] encoded = new byte[message.length + 1];
-		encoded[0] = 01;
-		System.arraycopy(message, 0, encoded, 1, message.length);
-		return new BigInteger(encoded);
+		return new BigInteger(message);
 	}
 
 	public byte[] decodeFromBigInteger(BigInteger m) {
-		byte[] encoded = m.toByteArray();
-		byte[] decoded = new byte[encoded.length-1];
-		System.arraycopy(encoded, 1, decoded, 0, decoded.length);
-		return decoded;
+		return m.toByteArray();
 	}
 
 	

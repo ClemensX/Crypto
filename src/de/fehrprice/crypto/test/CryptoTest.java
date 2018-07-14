@@ -345,16 +345,16 @@ not able to encrypt 512 bytes with RSA 4096 bits
 		assertEquals(input, res);
 		input = "00010000";
 		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
-		assertEquals(input, res);
+		assertEquals("010000", res);
 		input = "00000000000000000001";
 		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
-		assertEquals(input, res);
+		assertEquals("01", res);
 		input = "ffffffffffffffffffff";
 		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
-		assertEquals(input, res);
+		assertEquals("ff", res);
 		input = "ffffffffffffffffffff000000";
 		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
-		assertEquals(input, res);
+		assertEquals("ff000000", res);
 		
 		System.out.println("curve25519 tests");
 		input = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4";
