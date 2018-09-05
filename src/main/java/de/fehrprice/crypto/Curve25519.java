@@ -1,7 +1,5 @@
 package de.fehrprice.crypto;
 
-import static org.junit.Assert.assertEquals;
-
 import java.math.BigInteger;
 
 /**

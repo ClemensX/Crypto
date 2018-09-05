@@ -1,15 +1,18 @@
 package de.fehrprice.crypto.test;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.regex.Pattern;
-
-import org.junit.Test;
 
 import de.fehrprice.crypto.AES;
 import de.fehrprice.crypto.Curve25519;
@@ -149,7 +152,7 @@ public class CryptoTest {
 		//aes.setSeed(aes.toByteArray("c14907f6ca3b3aa070e9aa313b52b5ec5f9c6abfbac634aa50409fa766677653"));
 		double pi = calculatePi(aes, 1000000L);
 		//System.out.println("(1000000) Pi = " + pi);
-		assertTrue("pi within expected range", pi >= 3.14d && pi <= 3.15d);
+		assertTrue(pi >= 3.14d && pi <= 3.15d, "pi within expected range");
 	 	}
 	
 	private double calculatePi(AES aes, long num_points) {

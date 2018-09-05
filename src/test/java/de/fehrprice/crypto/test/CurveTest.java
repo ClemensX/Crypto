@@ -1,13 +1,17 @@
 package de.fehrprice.crypto.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 
 import de.fehrprice.crypto.AES;
 import de.fehrprice.crypto.Curve25519;
@@ -16,15 +20,15 @@ public class CurveTest {
 	
     public static boolean disableLongRunningTest = true;
 	
-	Curve25519 crv;
+	private static Curve25519 crv;
 	
-	@Before
-	public void setUp() throws Exception {
+	@BeforeAll
+	public static void setUp() throws Exception {
 		crv = new Curve25519();
 	}
 
-	@After
-	public void tearDown() throws Exception {
+	@AfterAll
+	public static void tearDown() throws Exception {
 	}
 
 	/*
