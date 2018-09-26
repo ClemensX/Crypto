@@ -307,4 +307,5 @@ public class Curve25519 {
 		return asLittleEndianHexString(uOut);
 	}
 
+	// ed25519 part - may be a separate class someday...
 }
