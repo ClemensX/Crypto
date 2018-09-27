@@ -37,7 +37,7 @@ public class Curve25519 {
 			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + b.length);
 		}
 		byte[] cloned = b.clone();
-		// clear lowest bit
+		// clear lowest 3 bits
 		cloned[0] = (byte)(((int)cloned[0]) & 248);
 		// clear highest bit
 		cloned[31] = (byte)(((int)cloned[31]) & 127);
