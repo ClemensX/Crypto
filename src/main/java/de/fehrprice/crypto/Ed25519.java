@@ -10,6 +10,8 @@ public class Ed25519 extends Curve25519 {
 	public static BigInteger By;
 	public static BigInteger d;
 	public static BigInteger I;
+	public static BigInteger L;
+	public static BigInteger B[];
 
 	public class KeyPair {
 		public String privateKey;
@@ -27,6 +29,12 @@ public class Ed25519 extends Curve25519 {
 		By = By.mod(q);
 		Bx = xrecover(By);
 		Bx = Bx.mod(q);
+		B = new BigInteger[2];
+		B[0] = Bx;
+		B[1] = By;
+		//  2^252+27742317777372353535851937790883648493
+		BigInteger add = new BigInteger("27742317777372353535851937790883648493");
+		L = BigInteger.valueOf(2).pow(252).add(add);
 	}
 	
 //	public BigInteger decodeScalar25519(byte[] b) {
@@ -112,9 +120,6 @@ public class Ed25519 extends Curve25519 {
 		// B = [Bx % q,By % q]
 		//By = 4 * inv(5)
 		//Bx = xrecover(By)
-		BigInteger B[] = new BigInteger[2];
-		B[0] = Bx;
-		B[1] = By;
 		BigInteger A[] = scalarmult(B, a);
 //		System.out.println("A[0]: " + A[0]);
 //		System.out.println("A[1]: " + A[1]);
@@ -128,12 +133,17 @@ public class Ed25519 extends Curve25519 {
 		return keys;
 	}
 	
-	private BigInteger encodepoint(BigInteger[] a) {
+	private byte[] encodepoint_to_array(BigInteger[] a) {
 		byte[] encoded = decodeFromBigIntegerLittleEndian(a[1]);
 		if (a[0].testBit(0)) {
 			// set highest bit in lowest byte
 			encoded[31] = (byte)(((int)encoded[31]) | 0x80);
 		}
+		return encoded;
+	}
+
+	private BigInteger encodepoint(BigInteger[] a) {
+		byte[] encoded = encodepoint_to_array(a);
 		return decodeLittleEndian(encoded, 255);
 	}
 
@@ -264,7 +274,24 @@ public class Ed25519 extends Curve25519 {
 		// sign and convert to BigInteger:
 		BigInteger r = h_int(r_arr);
 		System.out.println("r = " + r);
-		return null;
+		BigInteger R[] = scalarmult(B, r);
+//		System.out.println("A[0]: " + A[0]);
+//		System.out.println("A[1]: " + A[1]);
+		//  S = (r + Hint(encodepoint(R) + pk + m) * a) % l
+		// concat encode(R) + pk + m
+		byte[] enc_r = encodepoint_to_array(R);
+		byte[] pk = aes.toByteArray(pubk);
+		byte[] concat = new byte[enc_r.length + pk.length + message.length];
+		System.arraycopy(enc_r, 0, concat, 0, enc_r.length);
+		System.arraycopy(pk, 0, concat, enc_r.length, pk.length);
+		System.arraycopy(message, 0, concat, enc_r.length + pk.length, message.length);
+		System.out.println("concat int = " + h_int(concat));
+		BigInteger S = r.add(h_int(concat).multiply(a)).mod(L);
+		System.out.println("S = " + S);
+		//   enc = encodepoint(R) + encodeint(S)
+		String sig = aes.toString(enc_r) + asLittleEndianHexString(S);
+		System.out.println("sig = " + sig);
+		return sig;
 	}
 	
 }
