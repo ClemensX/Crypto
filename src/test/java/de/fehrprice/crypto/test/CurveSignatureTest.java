@@ -1,6 +1,7 @@
 package de.fehrprice.crypto.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -60,6 +61,7 @@ d25bf5f0595bbe24655141438e7a100b
 		assertEquals(publicKeyString, pubk);
 		String s = ed.signature(messageString,secretKeyString,pubk);
 		assertEquals(signatureString, s);
+		assertTrue(ed.checkvalid(s,messageString,publicKeyString));
 	}
 
 	@Test

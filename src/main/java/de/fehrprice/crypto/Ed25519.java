@@ -258,6 +258,14 @@ public class Ed25519 extends Curve25519 {
 		return signature(m, secretKeyString, pubk);
 	}
 
+	private byte[] concat_r_pk_m(byte[] enc_r, byte[] pk, byte[] m) {
+		byte[] concat = new byte[enc_r.length + pk.length + m.length];
+		System.arraycopy(enc_r, 0, concat, 0, enc_r.length);
+		System.arraycopy(pk, 0, concat, enc_r.length, pk.length);
+		System.arraycopy(m, 0, concat, enc_r.length + pk.length, m.length);
+		return concat;
+	}
+	
 	public String signature(byte[] message, String secretKeyString, String pubk) {
 		AES aes = new AES();
 		byte[] sk = aes.toByteArray(secretKeyString);
@@ -280,11 +288,7 @@ public class Ed25519 extends Curve25519 {
 		//  S = (r + Hint(encodepoint(R) + pk + m) * a) % l
 		// concat encode(R) + pk + m
 		byte[] enc_r = encodepoint_to_array(R);
-		byte[] pk = aes.toByteArray(pubk);
-		byte[] concat = new byte[enc_r.length + pk.length + message.length];
-		System.arraycopy(enc_r, 0, concat, 0, enc_r.length);
-		System.arraycopy(pk, 0, concat, enc_r.length, pk.length);
-		System.arraycopy(message, 0, concat, enc_r.length + pk.length, message.length);
+		byte[] concat = concat_r_pk_m(enc_r, aes.toByteArray(pubk), message);
 		System.out.println("concat int = " + h_int(concat));
 		BigInteger S = r.add(h_int(concat).multiply(a)).mod(L);
 		System.out.println("S = " + S);
@@ -293,5 +297,100 @@ public class Ed25519 extends Curve25519 {
 		System.out.println("sig = " + sig);
 		return sig;
 	}
+
+	private BigInteger decodeint(String s) {
+		AES aes = new AES();
+		byte[] b = aes.toByteArray(s);
+		BigInteger y = decodeLittleEndian(b, 255);
+		return y;
+	}
+
+	private BigInteger[] decodepoint(String substring) {
+/*
+  y = sum(2**i * bit(s,i) for i in range(0,b-1))
+  x = xrecover(y)
+  if x & 1 != bit(s,b-1): x = q-x
+  P = [x,y]
+  if not isoncurve(P): raise Exception("decoding point that is not on curve")
+  return P
+ */
+		AES aes = new AES();
+		byte[] y_arr = aes.toByteArray(substring);
+		BigInteger y = decodeLittleEndian(y_arr, 255);
+		BigInteger x = xrecover(y);
+		boolean x_and_1 = x.testBit(0);
+		boolean highbit = y.testBit(255);
+		if (x_and_1 != highbit) {
+			x = q.subtract(x);
+		}
+		BigInteger P[] = new BigInteger[2];
+		P[0] = x;
+		P[1] = y;
+		if (!isoncurve(P)) {
+			throw new IllegalArgumentException("decoding point that is not on curve");
+		}
+		return P;
+	}
 	
+	private boolean isoncurve(BigInteger[] p) {
+/*
+def isoncurve(P):
+  x = P[0]
+  y = P[1]
+  return (-x*x + y*y - 1 - d*x*x*y*y) % q == 0
+ */
+		BigInteger x = p[0]; 
+		BigInteger y = p[1];
+		BigInteger x_square = x.multiply(x);
+		BigInteger y_square = y.multiply(y);
+		BigInteger b = x_square.negate().add(y_square).subtract(BigInteger.ONE).subtract(d.multiply(x_square).multiply(y_square));
+		return b.mod(q).equals(BigInteger.ZERO);
+	}
+
+	public boolean checkvalid(String s, String messageString, String publicKeyString) {
+	/*
+	  if len(s) != b/4: raise Exception("signature length is wrong")
+	  if len(pk) != b/8: raise Exception("public-key length is wrong")
+	  R = decodepoint(s[0:b/8])
+	  A = decodepoint(pk)
+	  S = decodeint(s[b/8:b/4])
+	  h = Hint(encodepoint(R) + pk + m)
+	  if scalarmult(B,S) != edwards(R,scalarmult(A,h)):
+	    raise Exception("signature does not pass verification")
+	 */
+		AES aes = new AES();
+		byte[] m = aes.toByteArray(messageString);
+		return checkvalid(s, m, publicKeyString);
+	}
+
+	private boolean checkvalid(String s, byte[] m, String publicKeyString) {
+		AES aes = new AES();
+		if (s.length() != 128) {
+			throw new IllegalArgumentException("signature length is wrong");
+		}
+		if (publicKeyString.length() != 64) {
+			throw new IllegalArgumentException("public-key length is wrong");
+		}
+		BigInteger R[] = decodepoint(s.substring(0, 64));
+		BigInteger A[] = decodepoint(publicKeyString);
+		BigInteger S = decodeint(s.substring(64));
+		System.out.println("S = " + S);
+		print_point(R, "R");
+		print_point(A, "A");
+		byte[] enc_r = encodepoint_to_array(R);
+		byte[] concat = concat_r_pk_m(enc_r, aes.toByteArray(publicKeyString), m);
+		BigInteger h = h_int(concat);
+		System.out.println("concat int verify = " + h);
+		BigInteger[] left = scalarmult(B, S);
+		BigInteger[] right = edwards(R, scalarmult(A, h));
+		boolean is_equal = left[0].equals(right[0]) && left[1].equals(right[1]);  
+		if (!is_equal) {
+			throw new IllegalArgumentException("signature does not pass verification");
+		}
+		return true;
+	}
+
+	private void print_point(BigInteger[] p, String name) {
+		System.out.println(name + " [ " + p[0] + " ] [ " + p[1] + " ]");
+	}
 }
