@@ -90,6 +90,23 @@ d25bf5f0595bbe24655141438e7a100b
 		assertTrue(ed.checkvalid(s,messageString,publicKeyString));
 	}
 
+	// line 108: 
+	@Test
+	public void Test108() {
+		String secretKeyString, publicKeyString, messageString, signatureString;
+		secretKeyString = "50414cf549bcc55b5b6b75ea3782b2ea7c087b6a0106175e469ca2cc764aeb01";
+		publicKeyString = "d0f30c12e997f96e7aeecd1bff6a012ec388ebf8f3f4af664804d1638e4c346a";
+		messageString   = "75ad77e8c54b0b05fb2d162e7cadb8a7528081b863f76a441b374469413e5714edf54f800496af0157c17e425583414d4361f2134171c0b87c22ce6820a4850ab49d99a9badce9e36110e7f3060118b3590f82b43771e9fbb081afe62227e024d98de6cdec028d7c49490d";
+		signatureString = "b309800160de43a63a89a0acb8a6050059589b3eaecac20b256fece438042f69415d8a56883ee3836d3134a7fc1de64fa8c8cecc3ce27589f606058820857a0c";
+		//String pubk = ed.publicKey(null);
+		String pubk = ed.publicKey(secretKeyString);
+		assertEquals(publicKeyString, pubk);
+		String s = ed.signature(messageString,secretKeyString,pubk);
+		assertEquals(signatureString, s);
+		assertTrue(ed.checkvalid(s,messageString,publicKeyString));
+	}
+	
+	
 	@Test
 	void testConstants() {
 		assertEquals("46316835694926478169428394003475163141307993866256225615783033603165251855960", ed.By.toString());
