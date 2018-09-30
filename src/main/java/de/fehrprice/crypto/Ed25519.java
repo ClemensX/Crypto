@@ -101,6 +101,11 @@ public class Ed25519 extends Curve25519 {
 		
 		byte[] sk = aes.toByteArray(secretKeyString);
 		byte[] h = this.h(sk);
+		// we need only lower 32 bytes
+		byte[] h2 = new byte[32];
+		System.arraycopy(h, 0, h2, 0, 32);
+		h = h2;
+		//System.out.println("digest = " + aes.toString(ret));
 		BigInteger a = this.decodeScalar25519(h);
 		System.out.println("a = " + a);
 		// a * B
@@ -196,20 +201,70 @@ public class Ed25519 extends Curve25519 {
 		return expmod(b, q_minus2, q);
 	}
 	
+	/**
+	 * Decode 64 byte array to BigInteger, first byte (index 0) yields lowest bits in result  
+	 * python code(b==256): sum(2**i * bit(h,i) for i in range(2*b))
+    *
+	 * @param b
+	 * @param bits
+	 * @return
+	 */
+	public BigInteger decodeLittleEndian64( byte[] b) {
+		if (b.length != 64) {
+			throw new IllegalArgumentException(" array expected to be 64 bytes: " + b.length);
+		}
+		BigInteger big = new BigInteger("0");
+		int range = 64;
+		BigInteger factor = BigInteger.ONE;
+		for(int i = 0; i < range; i++) {
+			long v = ((int)b[i]) & 0xff; 
+			BigInteger byteVal = BigInteger.valueOf(v);
+			big = big.add(byteVal.multiply(factor));
+			factor = factor.multiply(BigInteger.valueOf(256));
+		}
+		return big;
+	}
+
+	private BigInteger h_int(byte[] message) {
+		byte[] digest = h(message);
+		return decodeLittleEndian64(digest);
+	}
+	
 	private byte[] h(byte[] message) {
 		SHA sha = new SHA();
 		AES aes = new AES();
 		byte[] digest = sha.sha512(message);
 		//System.out.println("digest = " + aes.toString(digest));
-		// we need only lower 32 bytes
-		byte[] ret = new byte[32];
-		System.arraycopy(digest, 0, ret, 0, 32);
-		//System.out.println("digest = " + aes.toString(ret));
-		return ret;
+		return digest;
 	}
 
 	public String publicKey(String secretKeyString) {
 		return keygen(secretKeyString).publicKey;
+	}
+
+	public String signature(String messageString, String secretKeyString, String pubk) {
+		AES aes = new AES();
+		byte[] m = aes.toByteArray(messageString);
+		return signature(m, secretKeyString, pubk);
+	}
+
+	public String signature(byte[] message, String secretKeyString, String pubk) {
+		AES aes = new AES();
+		byte[] sk = aes.toByteArray(secretKeyString);
+		byte[] h = this.h(sk);
+		// we need only lower 32 bytes
+		byte[] h_low = new byte[32];
+		System.arraycopy(h, 0, h_low, 0, 32);
+		BigInteger a = this.decodeScalar25519(h_low);
+		System.out.println("a = " + a);
+		// create array for 2nd half of signature + message
+		byte[] r_arr = new byte[32 + message.length];
+		System.arraycopy(h, 32, r_arr, 0, 32);
+		System.arraycopy(message, 0, r_arr, 32, message.length);
+		// sign and convert to BigInteger:
+		BigInteger r = h_int(r_arr);
+		System.out.println("r = " + r);
+		return null;
 	}
 	
 }

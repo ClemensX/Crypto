@@ -58,6 +58,8 @@ d25bf5f0595bbe24655141438e7a100b
 		//String pubk = ed.publicKey(null);
 		String pubk = ed.publicKey(secretKeyString);
 		assertEquals(publicKeyString, pubk);
+		String s = ed.signature(messageString,secretKeyString,pubk);
+		//assertEquals(signatureString, s);
 	}
 
 	@Test
