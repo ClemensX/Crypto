@@ -316,10 +316,12 @@ public class Ed25519 extends Curve25519 {
  */
 		AES aes = new AES();
 		byte[] y_arr = aes.toByteArray(substring);
-		BigInteger y = decodeLittleEndian(y_arr, 255);
+		BigInteger s = decodeLittleEndian(y_arr, 255);
+		// clear high bit and save as y:
+		BigInteger y = s.clearBit(255);
 		BigInteger x = xrecover(y);
 		boolean x_and_1 = x.testBit(0);
-		boolean highbit = y.testBit(255);
+		boolean highbit = s.testBit(255);
 		if (x_and_1 != highbit) {
 			x = q.subtract(x);
 		}
@@ -371,6 +373,7 @@ def isoncurve(P):
 		if (publicKeyString.length() != 64) {
 			throw new IllegalArgumentException("public-key length is wrong");
 		}
+		System.out.println("decodepoint R " + s.substring(0, 64));
 		BigInteger R[] = decodepoint(s.substring(0, 64));
 		BigInteger A[] = decodepoint(publicKeyString);
 		BigInteger S = decodeint(s.substring(64));
