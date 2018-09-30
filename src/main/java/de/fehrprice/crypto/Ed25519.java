@@ -29,6 +29,45 @@ public class Ed25519 extends Curve25519 {
 		Bx = Bx.mod(q);
 	}
 	
+//	public BigInteger decodeScalar25519(byte[] b) {
+//		if (b.length != 32) {
+//			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + b.length);
+//		}
+//		AES aes = new AES();
+//		RSA rsa = new RSA();
+//		byte[] cloned = b.clone();
+//		// clear lowest 3 bits
+//		cloned[0] = (byte)(((int)cloned[0]) & 252);
+//		// clear highest bit
+//		cloned[31] = (byte)(((int)cloned[31]) & 127);
+//		// set 2nd highest bit:
+//		cloned[31] = (byte)(((int)cloned[31]) | 64);
+//		System.out.println("decode " + aes.toString(cloned));
+//		System.out.println("decode lit " + decodeLittleEndian(cloned, 255));
+//		System.out.println("decode big " + rsa.encodeToBigInteger(cloned));
+//		return decodeLittleEndian(cloned, 255);
+//	}
+
+//	public BigInteger decode(byte[] b) {
+//		if (b.length != 32) {
+//			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + b.length);
+//		}
+//		AES aes = new AES();
+//		RSA rsa = new RSA();
+//		byte[] cloned = b.clone();
+//		// clear lowest 3 bits
+//		System.out.println("cloned[0] = " + (((int)cloned[0])));
+//		cloned[0] = (byte)(((int)cloned[0]) & 248);
+//		// clear highest bit
+//		cloned[31] = (byte)(((int)cloned[31]) & 127);
+//		// set 2nd highest bit:
+//		cloned[31] = (byte)(((int)cloned[31]) | 64);
+////		System.out.println("decode " + aes.toString(cloned));
+////		System.out.println("decode lit " + decodeLittleEndian(cloned, 255));
+////		System.out.println("decode big " + rsa.encodeToBigInteger(cloned));
+//		return decodeLittleEndian(cloned, 255);
+//	}
+
 	/**
 	 * @param secretKeyString secretkey must be 64 byte hex string or null/empty
 	 * @return
@@ -72,13 +111,15 @@ public class Ed25519 extends Curve25519 {
 		B[0] = Bx;
 		B[1] = By;
 		BigInteger A[] = scalarmult(B, a);
-		System.out.println("A[0]: " + A[0]);
-		System.out.println("A[1]: " + A[1]);
+//		System.out.println("A[0]: " + A[0]);
+//		System.out.println("A[1]: " + A[1]);
 		BigInteger encoded = encodepoint(A);
-		System.out.println("encoded: " + encoded);
-		System.out.println("encoded: " + asLittleEndianHexString(encoded));
-		
-		System.out.println("encoded: " + encoded.toString(16));
+//		System.out.println("encoded: " + encoded);
+//		System.out.println("encoded: " + asLittleEndianHexString(encoded));
+//		
+//		System.out.println("encoded: " + encoded.toString(16));
+		keys.privateKey = secretKeyString;
+		keys.publicKey = asLittleEndianHexString(encoded);
 		return keys;
 	}
 	
@@ -157,10 +198,13 @@ public class Ed25519 extends Curve25519 {
 	
 	private byte[] h(byte[] message) {
 		SHA sha = new SHA();
+		AES aes = new AES();
 		byte[] digest = sha.sha512(message);
+		//System.out.println("digest = " + aes.toString(digest));
 		// we need only lower 32 bytes
 		byte[] ret = new byte[32];
-		System.arraycopy(digest, 32, ret, 0, 32);
+		System.arraycopy(digest, 0, ret, 0, 32);
+		//System.out.println("digest = " + aes.toString(ret));
 		return ret;
 	}
 
