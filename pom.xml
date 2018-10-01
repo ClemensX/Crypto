@@ -15,6 +15,11 @@
   </properties>
 
   <build>
+  <resources>
+      <resource>
+       <directory>src/test/resources</directory>
+     </resource>
+   </resources>
 <!--     <defaultGoal>install</defaultGoal>
  -->    <plugins>
       <plugin>

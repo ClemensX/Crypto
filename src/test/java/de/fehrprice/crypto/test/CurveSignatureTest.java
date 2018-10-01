@@ -3,6 +3,12 @@ package de.fehrprice.crypto.test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -10,6 +16,10 @@ import org.junit.jupiter.api.Test;
 import de.fehrprice.crypto.Curve25519;
 import de.fehrprice.crypto.Ed25519;
 
+/**
+ * test data here: http://ed25519.cr.yp.to/software.html
+ *
+ */
 public class CurveSignatureTest {
 	
     public static boolean disableLongRunningTest = true;
@@ -111,6 +121,48 @@ d25bf5f0595bbe24655141438e7a100b
 	void testConstants() {
 		assertEquals("46316835694926478169428394003475163141307993866256225615783033603165251855960", ed.By.toString());
 		assertEquals("15112221349535400772501151409588531511454012693041857206046113283949847762202", ed.Bx.toString());
+	}
+	
+	@Test
+	void validateWithFile() {
+		// fields on each input line: sk, pk, m, sm
+		// each field hex
+		// each field colon-terminated
+		// sk includes pk at end
+		// sm includes m at end
+		//System.out.println("pwd = " + System.getProperty("user.dir"));
+		String filename = System.getProperty("user.dir") + "/src/test/resources/sign.input";
+		try {
+			int linenum = 0;
+			BufferedReader reader = new BufferedReader(new FileReader(filename));
+			String line = reader.readLine();
+			while (line != null && linenum < 100) {
+				//System.out.println(line);
+				testLine(line);
+				linenum++;
+				line = reader.readLine();
+			}
+			reader.close();
+		} catch (IOException e) {
+		}  
+	}
+
+	private void testLine(String line) {
+		String x[] = line.split(":");
+		String secretKey = x[0].substring(0, 64);
+		String publicKey = x[1];
+		String messageHexString = x[2];
+		String signatureString = x[3].substring(0, 128);
+		String pubk = ed.publicKey(secretKey);
+		assertEquals(publicKey, pubk);
+		String s = ed.signature(messageHexString,secretKey,pubk);
+		assertEquals(signatureString, s);
+		assertTrue(ed.checkvalid(s,messageHexString,publicKey));
+		
+//		System.out.println("secret " + secretKey);
+//		System.out.println("public " + publicKey);
+//		System.out.println("message " + messageHexString);
+//		System.out.println("signature " + signatureString);
 	}
 }
 

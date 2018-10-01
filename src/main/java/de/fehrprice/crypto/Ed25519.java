@@ -2,6 +2,10 @@ package de.fehrprice.crypto;
 
 import java.math.BigInteger;
 
+/**
+ * Implementation blueprint here: http://ed25519.cr.yp.to/software.html
+ *
+ */
 public class Ed25519 extends Curve25519 {
 
 	public static BigInteger q;
