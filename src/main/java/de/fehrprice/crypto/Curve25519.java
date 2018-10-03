@@ -118,17 +118,19 @@ public class Curve25519 {
 	
 	public byte[] decodeFromBigIntegerLittleEndian(BigInteger m) {
 		byte[] encoded = m.toByteArray();
+		if (encoded.length > 32) {
+			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + encoded.length);
+		}
+		encoded = Conv.prependWithZeroBytes(32, encoded);
 		// reverse order:
 		byte[] encoded2 = new byte[encoded.length];
 		for( int i = 0; i < encoded.length; i++) {
 			encoded2[encoded.length-1-i] = encoded[i];
 		}
-		byte[] decoded = new byte[encoded2.length];
-		System.arraycopy(encoded2, 0, decoded, 0, decoded.length);
-		if (decoded.length != 32) {
-			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + decoded.length);
+		if (encoded2.length != 32) {
+			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + encoded2.length);
 		}
-		return decoded;
+		return encoded2;
 	}
 
 	public BigInteger decodeUCoordinate(byte[] u, int bits) {

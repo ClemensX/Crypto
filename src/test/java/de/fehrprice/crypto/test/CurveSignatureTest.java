@@ -116,6 +116,22 @@ d25bf5f0595bbe24655141438e7a100b
 		assertTrue(ed.checkvalid(s,messageString,publicKeyString));
 	}
 	
+	// line 127 (was leading to short 00 prefix signature until fixed)
+	//                     
+	@Test
+	public void Test126() {
+		String secretKeyString, publicKeyString, messageString, signatureString;
+		secretKeyString = "670b30626fe367d8b45f43733d6f25b37eccbcb551963f0ac8b666b48041c72d";
+		publicKeyString = "65aa4c6d4ba0ab34bc75b39f09527ca6f2425f52415cdffdf2dff273f8ea612c";
+		messageString   = "d00bcca7e184d10e1f1fe420b50639e1d5deba52a751236e68c59bb4bff9802f5fc165ed42fd6d534670a7c6fb60e4307d947915a248bf2f93465c2cb44d8f453d2c015afbc8ed58818ea51726a25177930e9ea192ef4514f4bb0eb4e0f5d4ae3c46e357c81187f7ed174733fff959c3f9fae6486cfa1356a95699211de5";
+		signatureString = "1b6b4377d2b98e0f9d24ae8dfe30e2396e2004380d3431488e5843cf8d2d7a0070ab21f8a3b51ce84d2f4ba209f739f922bebf798096693f5622873d79ae6f04";
+		//String pubk = ed.publicKey(null);
+		String pubk = ed.publicKey(secretKeyString);
+		assertEquals(publicKeyString, pubk);
+		String s = ed.signature(messageString,secretKeyString,pubk);
+		assertEquals(signatureString, s);
+		assertTrue(ed.checkvalid(s,messageString,publicKeyString));
+	}
 	
 	@Test
 	void testConstants() {
@@ -136,10 +152,14 @@ d25bf5f0595bbe24655141438e7a100b
 			int linenum = 0;
 			BufferedReader reader = new BufferedReader(new FileReader(filename));
 			String line = reader.readLine();
-			while (line != null && linenum < 100) {
+			while (line != null /*&& linenum < 100*/) {
 				//System.out.println(line);
 				testLine(line);
 				linenum++;
+				// print linennum to see progress
+				if (linenum % 100 == 0) {
+					System.out.println("process input line " + linenum);
+				}
 				line = reader.readLine();
 			}
 			reader.close();

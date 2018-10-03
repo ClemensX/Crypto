@@ -41,45 +41,6 @@ public class Ed25519 extends Curve25519 {
 		L = BigInteger.valueOf(2).pow(252).add(add);
 	}
 	
-//	public BigInteger decodeScalar25519(byte[] b) {
-//		if (b.length != 32) {
-//			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + b.length);
-//		}
-//		AES aes = new AES();
-//		RSA rsa = new RSA();
-//		byte[] cloned = b.clone();
-//		// clear lowest 3 bits
-//		cloned[0] = (byte)(((int)cloned[0]) & 252);
-//		// clear highest bit
-//		cloned[31] = (byte)(((int)cloned[31]) & 127);
-//		// set 2nd highest bit:
-//		cloned[31] = (byte)(((int)cloned[31]) | 64);
-//		System.out.println("decode " + aes.toString(cloned));
-//		System.out.println("decode lit " + decodeLittleEndian(cloned, 255));
-//		System.out.println("decode big " + rsa.encodeToBigInteger(cloned));
-//		return decodeLittleEndian(cloned, 255);
-//	}
-
-//	public BigInteger decode(byte[] b) {
-//		if (b.length != 32) {
-//			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + b.length);
-//		}
-//		AES aes = new AES();
-//		RSA rsa = new RSA();
-//		byte[] cloned = b.clone();
-//		// clear lowest 3 bits
-//		System.out.println("cloned[0] = " + (((int)cloned[0])));
-//		cloned[0] = (byte)(((int)cloned[0]) & 248);
-//		// clear highest bit
-//		cloned[31] = (byte)(((int)cloned[31]) & 127);
-//		// set 2nd highest bit:
-//		cloned[31] = (byte)(((int)cloned[31]) | 64);
-////		System.out.println("decode " + aes.toString(cloned));
-////		System.out.println("decode lit " + decodeLittleEndian(cloned, 255));
-////		System.out.println("decode big " + rsa.encodeToBigInteger(cloned));
-//		return decodeLittleEndian(cloned, 255);
-//	}
-
 	/**
 	 * @param secretKeyString secretkey must be 64 byte hex string or null/empty
 	 * @return
@@ -119,7 +80,7 @@ public class Ed25519 extends Curve25519 {
 		h = h2;
 		//System.out.println("digest = " + aes.toString(ret));
 		BigInteger a = this.decodeScalar25519(h);
-		System.out.println("a = " + a);
+		//System.out.println("a = " + a);
 		// a * B
 		// B = [Bx % q,By % q]
 		//By = 4 * inv(5)
@@ -256,12 +217,6 @@ public class Ed25519 extends Curve25519 {
 		return keygen(secretKeyString).publicKey;
 	}
 
-	public String signature(String messageString, String secretKeyString, String pubk) {
-		AES aes = new AES();
-		byte[] m = aes.toByteArray(messageString);
-		return signature(m, secretKeyString, pubk);
-	}
-
 	private byte[] concat_r_pk_m(byte[] enc_r, byte[] pk, byte[] m) {
 		byte[] concat = new byte[enc_r.length + pk.length + m.length];
 		System.arraycopy(enc_r, 0, concat, 0, enc_r.length);
@@ -270,6 +225,12 @@ public class Ed25519 extends Curve25519 {
 		return concat;
 	}
 	
+	public String signature(String messageString, String secretKeyString, String pubk) {
+		AES aes = new AES();
+		byte[] m = aes.toByteArray(messageString);
+		return signature(m, secretKeyString, pubk);
+	}
+
 	public String signature(byte[] message, String secretKeyString, String pubk) {
 		AES aes = new AES();
 		byte[] sk = aes.toByteArray(secretKeyString);
@@ -278,27 +239,25 @@ public class Ed25519 extends Curve25519 {
 		byte[] h_low = new byte[32];
 		System.arraycopy(h, 0, h_low, 0, 32);
 		BigInteger a = this.decodeScalar25519(h_low);
-		System.out.println("a = " + a);
+		//System.out.println("a = " + a);
 		// create array for 2nd half of signature + message
 		byte[] r_arr = new byte[32 + message.length];
 		System.arraycopy(h, 32, r_arr, 0, 32);
 		System.arraycopy(message, 0, r_arr, 32, message.length);
 		// sign and convert to BigInteger:
 		BigInteger r = h_int(r_arr);
-		System.out.println("r = " + r);
+		//System.out.println("r = " + r);
 		BigInteger R[] = scalarmult(B, r);
-//		System.out.println("A[0]: " + A[0]);
-//		System.out.println("A[1]: " + A[1]);
 		//  S = (r + Hint(encodepoint(R) + pk + m) * a) % l
 		// concat encode(R) + pk + m
 		byte[] enc_r = encodepoint_to_array(R);
 		byte[] concat = concat_r_pk_m(enc_r, aes.toByteArray(pubk), message);
-		System.out.println("concat int = " + h_int(concat));
+		//System.out.println("concat int = " + h_int(concat));
 		BigInteger S = r.add(h_int(concat).multiply(a)).mod(L);
-		System.out.println("S = " + S);
+		//System.out.println("S = " + S);
 		//   enc = encodepoint(R) + encodeint(S)
 		String sig = aes.toString(enc_r) + asLittleEndianHexString(S);
-		System.out.println("sig = " + sig);
+		//System.out.println("sig = " + sig);
 		return sig;
 	}
 
@@ -377,17 +336,17 @@ def isoncurve(P):
 		if (publicKeyString.length() != 64) {
 			throw new IllegalArgumentException("public-key length is wrong");
 		}
-		System.out.println("decodepoint R " + s.substring(0, 64));
+		//System.out.println("decodepoint R " + s.substring(0, 64));
 		BigInteger R[] = decodepoint(s.substring(0, 64));
 		BigInteger A[] = decodepoint(publicKeyString);
 		BigInteger S = decodeint(s.substring(64));
-		System.out.println("S = " + S);
-		print_point(R, "R");
-		print_point(A, "A");
+		//System.out.println("S = " + S);
+		//print_point(R, "R");
+		//print_point(A, "A");
 		byte[] enc_r = encodepoint_to_array(R);
 		byte[] concat = concat_r_pk_m(enc_r, aes.toByteArray(publicKeyString), m);
 		BigInteger h = h_int(concat);
-		System.out.println("concat int verify = " + h);
+		//System.out.println("concat int verify = " + h);
 		BigInteger[] left = scalarmult(B, S);
 		BigInteger[] right = edwards(R, scalarmult(A, h));
 		boolean is_equal = left[0].equals(right[0]) && left[1].equals(right[1]);  
