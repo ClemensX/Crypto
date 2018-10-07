@@ -4,14 +4,12 @@ import java.util.Date;
 import java.util.logging.Logger;
 
 /**
- * AES implementation.
+ * AES 128/256 implementation. Pseudo Random Number Generator (PRNG) implementation based on AES.
  * http://csrc.nist.gov/publications/fips/fips197/fips-197.pdf
  *
  */
 public class AES {
 
-	private byte[] column = new byte[4];
-	private byte[] column_copy = new byte[4];
 	/**
 	 * @param args
 	 */
@@ -20,7 +18,37 @@ public class AES {
 		aes.test();
 	}
 
-	Logger log = Logger.getLogger(AES.class.toString());
+	private Logger logger = Logger.getLogger(AES.class.toString());
+	
+	private boolean weakRandomNumbers;
+
+	public boolean isWeakRandomNumbers() {
+		return weakRandomNumbers;
+	}
+
+	/**
+	 * Construct AES instance with weak Pseudo Random Number Generator (PRNG).
+	 * The PRNG is weak because the initial seed is calculated based on simple current time value which opens the door for 
+	 * guessing the initial seed and consequently all produced random numbers.
+	 * Use this constructor only for pure AES without PRNG usage or simple PRNG applications like test code.
+	 */
+	public AES() {
+		weakRandomNumbers = true;
+	}
+
+	/**
+	 * Construct AES instance with strong Pseudo Random Number Generator (PRNG).
+	 * The PRNG can only be as strong as the initial seed.
+	 * The seed value should be uniformly distributed, unpredictable and not repeatable.
+	 * This class makes no attempt to check the seed value - that is completely up to the user of this class.
+	 * As long as the initial seed is passed to the constructor the PRNG is considered strong.
+	 * @param initialSeed 32 byte initial seed value
+	 */
+	public AES(byte[] initialSeed) {
+		setSeed(initialSeed);
+		weakRandomNumbers = false;
+	}
+	
 	private void test() {
 //		log.setLevel(Level.ALL);
 //		log.fine("start AES test");
@@ -78,6 +106,8 @@ public class AES {
 
 	//private byte[] key;
 	
+	private byte[] column = new byte[4];
+	private byte[] column_copy = new byte[4];
 	
 	public byte[] cipher(byte[] key, byte[] in, int Nb, int Nr, int Nk, int [] waldi) {
 		byte[] state = new byte[4*Nb];
@@ -546,23 +576,11 @@ public class AES {
 		}
 	}
 	
-	public byte[] toByteArray(String string) {
-		byte[] bytes = new byte[string.length()/2];
-		for (int i = 0; i < bytes.length; i ++) {
-			String sub = string.substring(i*2, i*2 + 2);
-			bytes[i] = (byte)(Integer.parseInt(sub, 16)& 0xff);
-		}
-		return bytes;
-	}
-
-	public String toString(byte[] bytes) {
-		StringBuffer buf = new StringBuffer();
-		for (int i = 0; i < bytes.length; i++) {
-			buf.append(String.format("%02x", bytes[i]));
-		}
-		return buf.toString();
-	}
-
+	/**
+	 * Transpose hex string. Do not use.
+	 * @param bytes
+	 * @return
+	 */
 	public String toStringTransposed(byte[] bytes) {
 		byte[] trans = new byte[bytes.length];
 		for (int i = 0; i < trans.length; i++) {
@@ -570,19 +588,19 @@ public class AES {
 			int y = i / 4;
 			trans[x*4 + y] = bytes[i];
 		}
-		return toString(trans);
+		return Conv.toString(trans);
 	}
 
 	public byte[] decipher256(String key, byte[]  input) {
-		return decipher(toByteArray(key), input, 4, 14, 8);
+		return decipher(Conv.toByteArray(key), input, 4, 14, 8);
 	}
 	
 	public byte[] cipher256(String key, String plaintext) {
-		return cipher(toByteArray(key), toByteArray(plaintext), 4, 14, 8, null);
+		return cipher(Conv.toByteArray(key), Conv.toByteArray(plaintext), 4, 14, 8, null);
 	}
 
 	public byte[] cipher128(String key, String plaintext) {
-		return cipher(toByteArray(key), toByteArray(plaintext), 4, 10, 4, null);
+		return cipher(Conv.toByteArray(key), Conv.toByteArray(plaintext), 4, 10, 4, null);
 	}
 
 	/* random numbers
@@ -597,7 +615,7 @@ public class AES {
 	 * Set initial seed used for random number generator.
 	 * @param myseed 32 bytes
 	 */
-	public void setSeed(byte[] myseed) {
+	private void setSeed(byte[] myseed) {
 		if (myseed == null || myseed.length < 32) {
 			throw new NumberFormatException("invalid seed");
 		}
@@ -606,25 +624,13 @@ public class AES {
 		System.arraycopy(myseed, 0, seed, 0, 32);
 	}
 	
-	public byte[] fixByteArrayLength(int newLen, byte[] oldarray) {
-		if (oldarray.length > newLen) {
-			throw new NumberFormatException(" source array too big. Should be <= " + newLen + " bytes");
-		}
-		byte newArray[] = new byte[newLen];
-		System.arraycopy(oldarray, 0, newArray, 0, oldarray.length);
-		for (int i = oldarray.length; i < newLen; i++) {
-			newArray[i] = 0;
-		}
-		return newArray;
-	}
-	
-
 	/**
 	 * generate 16 new random bytes and put them in the first half of the seed buffer
 	 */
 	private void randomRun() {
 		if (seed == null) {
 			seed = calculateSeed();
+			logger.warning("This AES uses weak Pseudo Random Numbers. Do not use for serious cryptography!");
 		}
 		byte[] text = new byte[16];
 		byte[] key = new byte[16];
@@ -640,7 +646,7 @@ public class AES {
 		String magic = "46454852"; // ASCII code for 'FEHR'
 		long nanosec = System.nanoTime();
 		String nano = String.format("%016x", nanosec);
-		byte[] mn = toByteArray(magic+nano);
+		byte[] mn = Conv.toByteArray(magic+nano);
 		System.arraycopy(mn, 0, calc_seed, 0, 12);
 		String datehash = new Date().toString().hashCode() + "";
 		for (int i = 0; i < 4; i++) {

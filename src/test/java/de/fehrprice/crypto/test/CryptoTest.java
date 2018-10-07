@@ -1,20 +1,18 @@
 package de.fehrprice.crypto.test;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.util.regex.Pattern;
 
+import org.junit.jupiter.api.Test;
+
 import de.fehrprice.crypto.AES;
+import de.fehrprice.crypto.Conv;
 import de.fehrprice.crypto.Curve25519;
 import de.fehrprice.crypto.RSA;
 import de.fehrprice.crypto.SHA;
@@ -59,7 +57,7 @@ public class CryptoTest {
 		System.out.println("     " + v.toString());
 		assertTrue(v.toString().equals("31029842492115040904895560451863089656472772604678260265531221036453811406496"));
 		
-		System.out.println("\n\n p is " + crv.p);
+		System.out.println("\n\n p is " + Curve25519.p);
 	}
 	
 	// 2b 7e 15 16 28 ae d2 a6 ab f7 15 88 09 cf 4f 3c
@@ -84,13 +82,13 @@ public class CryptoTest {
         byte[] res2 = aes.cipher(key128_2, plaintext_2, Nb, 10, 4, w);
         assertEquals("69c4e0d86a7b0430d8cdb78070b4c55a", aes.toStringTransposed(res2));
         
-        byte[] plaintext192 = aes.toByteArray("00112233445566778899aabbccddeeff");
-        byte[] key192 = aes.toByteArray("000102030405060708090a0b0c0d0e0f1011121314151617");
+        byte[] plaintext192 = Conv.toByteArray("00112233445566778899aabbccddeeff");
+        byte[] key192 = Conv.toByteArray("000102030405060708090a0b0c0d0e0f1011121314151617");
         byte[] res192 = aes.cipher(key192, plaintext192, Nb, 12, 6, w);
         assertEquals("dda97ca4864cdfe06eaf70a0ec0d7191", aes.toStringTransposed(res192));
 
-        byte[] plaintext256 = aes.toByteArray("00112233445566778899aabbccddeeff");
-        byte[] key256 = aes.toByteArray("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
+        byte[] plaintext256 = Conv.toByteArray("00112233445566778899aabbccddeeff");
+        byte[] key256 = Conv.toByteArray("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
         byte[] res256 = aes.cipher(key256, plaintext256, Nb, 14, 8, w);
         byte[] res256_2 = aes.cipher256("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f", "00112233445566778899aabbccddeeff");
         assertEquals("8ea2b7ca516745bfeafc49904b496089", aes.toStringTransposed(res256));
@@ -103,7 +101,7 @@ public class CryptoTest {
         byte[] res_5 = aes.cipher256(zeroKey, zeroInput);
         //byte[] res_6 = aes.cipher256(zeroKey,"00000000000000000000000000000001");
         byte[] dec_5 = aes.decipher256(zeroKey, res_5);
-        assertArrayEquals(aes.toByteArray(zeroInput), dec_5);
+        assertArrayEquals(Conv.toByteArray(zeroInput), dec_5);
 }
 
 	@Test public void testKeyExpansion() {
@@ -187,14 +185,14 @@ public class CryptoTest {
 	@Test public void testConversions() {
 		AES aes = new AES();
 		byte[] plaintext = {(byte)0x32, (byte)0x43, (byte)0xf6, (byte)0xa8, (byte)0x88, (byte)0x5a, (byte)0x30, (byte)0x8d, (byte)0x31, (byte)0x31, (byte)0x98, (byte)0xa2, (byte)0xe0, (byte)0x37, (byte)0x07, (byte)0x34};
-		String plain = aes.toString(plaintext);
+		String plain = Conv.toString(plaintext);
 		assertEquals("3243f6a8885a308d313198a2e0370734", plain);
-		byte[] re = aes.toByteArray(plain);
+		byte[] re = Conv.toByteArray(plain);
         for (int i = 0; i < re.length; i++) {
         	assertEquals(re[i], plaintext[i]);
         }
         //System.out.println((aes.toStringTransposed(aes.toByteArray("696ad870c47bcdb4e004b7c5d830805a"))));
-        assertEquals("69c4e0d86a7b0430d8cdb78070b4c55a", (aes.toStringTransposed(aes.toByteArray("696ad870c47bcdb4e004b7c5d830805a"))));
+        assertEquals("69c4e0d86a7b0430d8cdb78070b4c55a", (aes.toStringTransposed(Conv.toByteArray("696ad870c47bcdb4e004b7c5d830805a"))));
         
         //System.out.println("exp " + highMod(2,4,1000));
         //cypher
@@ -296,7 +294,6 @@ not able to encrypt 512 bytes with RSA 4096 bits
 	public void testRSASigning() {
 		String secret_k = "4a5d9d5ba4ce2de1728e3bf480350f25e07e21c947d19e3376f09b3c1e161742";
 		RSA rsa = new RSA();
-		AES aes = new AES();
 		rsa.generateKeys(1024);
 		String alice_public = rsa.keys.n.toString(16);
 		String alice_private = rsa.keys.d.toString(16);
@@ -315,7 +312,7 @@ not able to encrypt 512 bytes with RSA 4096 bits
 		assertEquals(64, hash.length);
 		
 		// encrypt hash with static encryption method:
-		String hashString = aes.toString(hash);
+		String hashString = Conv.toString(hash);
 		System.out.println(" message hash: " + hashString);
 		String bigencString = RSA.encryptMessageWithPrivateKey(hashString, alice_private, alice_public);
 		
@@ -338,41 +335,39 @@ not able to encrypt 512 bytes with RSA 4096 bits
 	
 	@Test
 	public void testBigIntegerConversions() {
-		AES aes = new AES();
 		RSA rsa = new RSA();
 		String res, input = "01";
-		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
+		res = Conv.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(Conv.toByteArray(input))));
 		assertEquals(input, res);
 		input = "ff";
-		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
+		res = Conv.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(Conv.toByteArray(input))));
 		assertEquals(input, res);
 		input = "00010000";
-		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
+		res = Conv.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(Conv.toByteArray(input))));
 		assertEquals("010000", res);
 		input = "00000000000000000001";
-		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
+		res = Conv.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(Conv.toByteArray(input))));
 		assertEquals("01", res);
 		input = "ffffffffffffffffffff";
-		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
+		res = Conv.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(Conv.toByteArray(input))));
 		assertEquals("ff", res);
 		input = "ffffffffffffffffffff000000";
-		res = aes.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(aes.toByteArray(input))));
+		res = Conv.toString(rsa.decodeFromBigInteger(rsa.encodeToBigInteger(Conv.toByteArray(input))));
 		assertEquals("ff000000", res);
 		
 		System.out.println("curve25519 tests");
 		input = "a546e36bf0527c9d3b16154b82465edd62144c0ac1fc5a18506a2244ba449ac4";
-		BigInteger bi = rsa.encodeToBigInteger(aes.toByteArray(input));
+		BigInteger bi = rsa.encodeToBigInteger(Conv.toByteArray(input));
 		System.out.println(bi);
 		bi = new BigInteger("31029842492115040904895560451863089656472772604678260265531221036453811406496");
 		System.out.println("input: " + bi);
-		res = aes.toString(rsa.decodeFromBigIntegerLittleEndian(bi));
+		res = Conv.toString(rsa.decodeFromBigIntegerLittleEndian(bi));
 		System.out.println("decoded: " + res);
 	}
 	
 	// SHA
 	
 	@Test public void testSHA() {
-		AES aes = new AES();
 		SHA sha = new SHA();
 		byte[] digest = null;
 		
@@ -391,7 +386,7 @@ not able to encrypt 512 bytes with RSA 4096 bits
 		sha.feed("c".getBytes());
 		digest = sha.endSha512Feed();
 		//System.out.println("digest: " + aes.toString(digest));
-		assertTrue(aes.toString(digest).equalsIgnoreCase("DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F"));
+		assertTrue(Conv.toString(digest).equalsIgnoreCase("DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F"));
 
 		digest = sha.pad1024("abc".getBytes());
 		assertEquals(1024/8, digest.length);
@@ -399,11 +394,11 @@ not able to encrypt 512 bytes with RSA 4096 bits
 		digest = sha.sha512("abc");
 		assertEquals(512/8, digest.length);
 		//System.out.println("digest: " + aes.toString(digest));
-		assertTrue(aes.toString(digest).equalsIgnoreCase("DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F"));
+		assertTrue(Conv.toString(digest).equalsIgnoreCase("DDAF35A193617ABACC417349AE20413112E6FA4E89A97EA20A9EEEE64B55D39A2192992A274FC1A836BA3C23A3FEEBBD454D4423643CE80E2A9AC94FA54CA49F"));
 		
 		digest = sha.sha512("abcdefghbcdefghicdefghijdefghijkefghijklfghijklmghijklmnhijklmnoijklmnopjklmnopqklmnopqrlmnopqrsmnopqrstnopqrstu");
 		assertEquals(512/8, digest.length);
 		//System.out.println("digest: " + aes.toString(digest));
-		assertTrue(aes.toString(digest).equalsIgnoreCase("8E959B75DAE313DA8CF4F72814FC143F8F7779C6EB9F7FA17299AEADB6889018501D289E4900F7E4331B99DEC4B5433AC7D329EEB6DD26545E96E55B874BE909"));
+		assertTrue(Conv.toString(digest).equalsIgnoreCase("8E959B75DAE313DA8CF4F72814FC143F8F7779C6EB9F7FA17299AEADB6889018501D289E4900F7E4331B99DEC4B5433AC7D329EEB6DD26545E96E55B874BE909"));
 	}
 }

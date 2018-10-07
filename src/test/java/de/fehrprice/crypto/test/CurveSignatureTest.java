@@ -4,8 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 
@@ -13,7 +11,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import de.fehrprice.crypto.Curve25519;
 import de.fehrprice.crypto.Ed25519;
 
 /**
@@ -135,11 +132,11 @@ d25bf5f0595bbe24655141438e7a100b
 	
 	@Test
 	void testConstants() {
-		assertEquals("46316835694926478169428394003475163141307993866256225615783033603165251855960", ed.By.toString());
-		assertEquals("15112221349535400772501151409588531511454012693041857206046113283949847762202", ed.Bx.toString());
+		assertEquals("46316835694926478169428394003475163141307993866256225615783033603165251855960", Ed25519.By.toString());
+		assertEquals("15112221349535400772501151409588531511454012693041857206046113283949847762202", Ed25519.Bx.toString());
 	}
 	
-	@Test
+	//@Test
 	void validateWithFile() {
 		// fields on each input line: sk, pk, m, sm
 		// each field hex

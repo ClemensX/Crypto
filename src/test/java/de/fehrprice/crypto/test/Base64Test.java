@@ -1,14 +1,12 @@
 package de.fehrprice.crypto.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Base64;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-
-import java.util.Base64;
 
 /**
  * Test Base64 encoding/decoding as described in RFC: https://tools.ietf.org/html/rfc4648

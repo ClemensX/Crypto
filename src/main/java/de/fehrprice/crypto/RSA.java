@@ -1,9 +1,6 @@
 package de.fehrprice.crypto;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class RSA {
 
@@ -75,7 +72,7 @@ public class RSA {
 		while (((random[0]&0xff) & 0x80) == 0) {	// we want highest bit set to ensure big enough number
 			random = aes.random(bytesNeeded);
 		}
-		BigInteger test = new BigInteger(aes.toString(random), 16);
+		BigInteger test = new BigInteger(Conv.toString(random), 16);
 		//System.out.println(" my num: " + aes.toString(random) + " BigInteger: " + test.toString(16));
 		//System.out.println(" BigInteger bitlen: " + test.bitLength());
 		// test at most 100 numbers to get prime, then give up
@@ -152,85 +149,12 @@ public class RSA {
 		System.arraycopy(encoded2, 0, decoded, 0, decoded.length);
 		return decoded;
 	}
-	
-	// public exponent to use
-    private BigInteger publicExponent;
-    
-    // size of the key to generate, >= RSAKeyFactory.MIN_MODLEN
-    private int keySize;
-    
-    // PRNG to use
-    //private SecureRandom random;
- 	public KeyPair generateKeyPairOLD() {
-		// accomodate odd key sizes in case anybody wants to use them
-		int lp = (keySize + 1) >> 1;
-		int lq = keySize - lp;
-//		if (random == null) {
-//			random = JCAUtil.getSecureRandom();
-//		}
-//		BigInteger e = publicExponent;
-//		while (true) {
-//			// generate two random primes of size lp/lq
-//			BigInteger p = BigInteger.probablePrime(lp, random);
-//			BigInteger q, n;
-//			do {
-//				q = BigInteger.probablePrime(lq, random);
-//				// convention is for p > q
-//				if (p.compareTo(q) < 0) {
-//					BigInteger tmp = p;
-//					p = q;
-//					q = tmp;
-//				}
-//				// modulus n = p * q
-//				n = p.multiply(q);
-//				// even with correctly sized p and q, there is a chance that
-//				// n will be one bit short. re-generate the smaller prime if so
-//			} while (n.bitLength() < keySize);
-//
-//			// phi = (p - 1) * (q - 1) must be relative prime to e
-//			// otherwise RSA just won't work ;-)
-//			BigInteger p1 = p.subtract(BigInteger.ONE);
-//			BigInteger q1 = q.subtract(BigInteger.ONE);
-//			BigInteger phi = p1.multiply(q1);
-			// generate new p and q until they work. typically
-			// the first try will succeed when using F4
-//			if (e.gcd(phi).equals(BigInteger.ONE) == false) {
-//				continue;
-//			}
 
-			// private exponent d is the inverse of e mod phi
-//			BigInteger d = e.modInverse(phi);
-//
-//			// 1st prime exponent pe = d mod (p - 1)
-//			BigInteger pe = d.mod(p1);
-//			// 2nd prime exponent qe = d mod (q - 1)
-//			BigInteger qe = d.mod(q1);
-//
-//			// crt coefficient coeff is the inverse of q mod p
-//			BigInteger coeff = q.modInverse(p);
-//
-//			try {
-//				//PublicKey publicKey = new RSAPublicKeyImpl(n, e);
-//				//PrivateKey privateKey = new RSAPrivateCrtKeyImpl(n, e, d, p, q,	pe, qe, coeff);
-//				return new KeyPair(n, e, d, p, q,	pe, qe, coeff);
-//			} catch(Exception ex){}
-//		}
-//	}
-		return null;
- 	}
-
- 	public static BigInteger hexStringToBigInteger(String hexString) {
-//		RSA rsa = new RSA();
-//		AES aes = new AES();
-//		byte[] bytes = aes.toByteArray(hexString);
-//		return rsa.encodeToBigInteger(bytes);
+ 	private static BigInteger hexStringToBigInteger(String hexString) {
  		return new BigInteger(hexString, 16);
  	}
  	
- 	public static String bigIntegerToHexString(BigInteger big) {
-//		RSA rsa = new RSA();
-//		AES aes = new AES();
-//		return aes.toString(rsa.decodeFromBigInteger(big));
+ 	private static String bigIntegerToHexString(BigInteger big) {
  		return big.toString(16);
  	}
  	
@@ -243,7 +167,6 @@ public class RSA {
 	 * @return
 	 */
 	public static String encryptMessageWithPrivateKey(String message, String private_d, String public_n) {
-		AES aes = new AES();
 		RSA rsa = new RSA();
 		rsa.keys.n = hexStringToBigInteger(public_n);
 		rsa.keys.d = hexStringToBigInteger(private_d);
@@ -265,7 +188,6 @@ public class RSA {
 	 * @return
 	 */
 	public static String decryptMessageWithPublicKey(String encryptedHexMsg, String publicKey) {
-		AES aes = new AES();
 		RSA rsa = new RSA();
 		BigInteger c = hexStringToBigInteger(encryptedHexMsg);
 		System.out.println("dec->enc: " + c.toString(16));

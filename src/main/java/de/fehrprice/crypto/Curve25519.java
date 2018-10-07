@@ -112,8 +112,7 @@ public class Curve25519 {
 		if (b.length != 32) {
 			throw new IllegalArgumentException(" arrays for curve have to be 32 bytes: " + b.length);
 		}
-		AES aes = new AES();
-		return aes.toString(b);
+		return Conv.toString(b);
 	}
 	
 	public byte[] decodeFromBigIntegerLittleEndian(BigInteger m) {
@@ -309,5 +308,4 @@ public class Curve25519 {
 		return asLittleEndianHexString(uOut);
 	}
 
-	// ed25519 part - may be a separate class someday...
 }

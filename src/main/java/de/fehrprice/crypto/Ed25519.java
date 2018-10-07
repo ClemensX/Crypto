@@ -24,8 +24,8 @@ public class Ed25519 extends Curve25519 {
 
 	public Ed25519() {
 		super();
-		q = this.p;
-		q_minus2 = this.p_minus2;
+		q = Curve25519.p;
+		q_minus2 = Curve25519.p_minus2;
 		d = BigInteger.valueOf(-121665).multiply(inv(BigInteger.valueOf(121666)));
 		d = d.mod(q);
 		I = expmod(BigInteger.valueOf(2), q.subtract(BigInteger.ONE).divide(BigInteger.valueOf(4)), q);
@@ -46,7 +46,6 @@ public class Ed25519 extends Curve25519 {
 	 * @return
 	 */
 	public KeyPair keygen(String secretKeyString) {
-		RSA rsa = new RSA();
 		AES aes = new AES();
 		KeyPair keys = new KeyPair();
 		if (secretKeyString == null) {
@@ -60,7 +59,7 @@ public class Ed25519 extends Curve25519 {
 			// first we need a public key: (no need for prime, just a random number):
 			byte[] privKeyBytes = aes.random(32);
 			// convert to hex string
-			secretKeyString = aes.toString(privKeyBytes);
+			secretKeyString = Conv.toString(privKeyBytes);
 			System.out.println("priv key generated: " + secretKeyString);
 		}
 //		  h = H(sk)
@@ -72,7 +71,7 @@ public class Ed25519 extends Curve25519 {
 //		#Return the key pair (public key is A=Enc(aB).
 //		return privkey,(self.B*a).encode()
 		
-		byte[] sk = aes.toByteArray(secretKeyString);
+		byte[] sk = Conv.toByteArray(secretKeyString);
 		byte[] h = this.h(sk);
 		// we need only lower 32 bytes
 		byte[] h2 = new byte[32];
@@ -207,7 +206,6 @@ public class Ed25519 extends Curve25519 {
 	
 	private byte[] h(byte[] message) {
 		SHA sha = new SHA();
-		AES aes = new AES();
 		byte[] digest = sha.sha512(message);
 		//System.out.println("digest = " + aes.toString(digest));
 		return digest;
@@ -226,14 +224,12 @@ public class Ed25519 extends Curve25519 {
 	}
 	
 	public String signature(String messageString, String secretKeyString, String pubk) {
-		AES aes = new AES();
-		byte[] m = aes.toByteArray(messageString);
+		byte[] m = Conv.toByteArray(messageString);
 		return signature(m, secretKeyString, pubk);
 	}
 
 	public String signature(byte[] message, String secretKeyString, String pubk) {
-		AES aes = new AES();
-		byte[] sk = aes.toByteArray(secretKeyString);
+		byte[] sk = Conv.toByteArray(secretKeyString);
 		byte[] h = this.h(sk);
 		// we need only lower 32 bytes
 		byte[] h_low = new byte[32];
@@ -251,19 +247,18 @@ public class Ed25519 extends Curve25519 {
 		//  S = (r + Hint(encodepoint(R) + pk + m) * a) % l
 		// concat encode(R) + pk + m
 		byte[] enc_r = encodepoint_to_array(R);
-		byte[] concat = concat_r_pk_m(enc_r, aes.toByteArray(pubk), message);
+		byte[] concat = concat_r_pk_m(enc_r, Conv.toByteArray(pubk), message);
 		//System.out.println("concat int = " + h_int(concat));
 		BigInteger S = r.add(h_int(concat).multiply(a)).mod(L);
 		//System.out.println("S = " + S);
 		//   enc = encodepoint(R) + encodeint(S)
-		String sig = aes.toString(enc_r) + asLittleEndianHexString(S);
+		String sig = Conv.toString(enc_r) + asLittleEndianHexString(S);
 		//System.out.println("sig = " + sig);
 		return sig;
 	}
 
 	private BigInteger decodeint(String s) {
-		AES aes = new AES();
-		byte[] b = aes.toByteArray(s);
+		byte[] b = Conv.toByteArray(s);
 		BigInteger y = decodeLittleEndian(b, 255);
 		return y;
 	}
@@ -277,8 +272,7 @@ public class Ed25519 extends Curve25519 {
   if not isoncurve(P): raise Exception("decoding point that is not on curve")
   return P
  */
-		AES aes = new AES();
-		byte[] y_arr = aes.toByteArray(substring);
+		byte[] y_arr = Conv.toByteArray(substring);
 		BigInteger s = decodeLittleEndian(y_arr, 255);
 		// clear high bit and save as y:
 		BigInteger y = s.clearBit(255);
@@ -323,13 +317,11 @@ def isoncurve(P):
 	  if scalarmult(B,S) != edwards(R,scalarmult(A,h)):
 	    raise Exception("signature does not pass verification")
 	 */
-		AES aes = new AES();
-		byte[] m = aes.toByteArray(messageString);
+		byte[] m = Conv.toByteArray(messageString);
 		return checkvalid(s, m, publicKeyString);
 	}
 
 	private boolean checkvalid(String s, byte[] m, String publicKeyString) {
-		AES aes = new AES();
 		if (s.length() != 128) {
 			throw new IllegalArgumentException("signature length is wrong");
 		}
@@ -344,7 +336,7 @@ def isoncurve(P):
 		//print_point(R, "R");
 		//print_point(A, "A");
 		byte[] enc_r = encodepoint_to_array(R);
-		byte[] concat = concat_r_pk_m(enc_r, aes.toByteArray(publicKeyString), m);
+		byte[] concat = concat_r_pk_m(enc_r, Conv.toByteArray(publicKeyString), m);
 		BigInteger h = h_int(concat);
 		//System.out.println("concat int verify = " + h);
 		BigInteger[] left = scalarmult(B, S);

@@ -2,18 +2,15 @@ package de.fehrprice.crypto.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+
+import java.math.BigInteger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigInteger;
-
 import de.fehrprice.crypto.AES;
+import de.fehrprice.crypto.Conv;
 import de.fehrprice.crypto.Curve25519;
 
 public class CurveTest {
@@ -156,7 +153,7 @@ public class CurveTest {
 		// first we need a public key: (no need for prime, just a random number):
 		byte[] privKeyBytes = aes.random(32);
 		// convert to hex string
-		String privKey = aes.toString(privKeyBytes);
+		String privKey = Conv.toString(privKeyBytes);
 		System.out.println("Private Key: " + privKey);
 		
 		// compute public key
@@ -167,8 +164,8 @@ public class CurveTest {
 		// prepare data to encrypt:
 		String plainData = "Geheim$74!";
 		byte[] dataBytes = plainData.getBytes();
-		dataBytes = aes.fixByteArrayLength(32, dataBytes);
-		String dataHexString = aes.toString(dataBytes);
+		dataBytes = Conv.fixByteArrayLength(32, dataBytes);
+		String dataHexString = Conv.toString(dataBytes);
 		//System.out.println("data hex string: " + dataHexString);
 		
 		// encrypt data
