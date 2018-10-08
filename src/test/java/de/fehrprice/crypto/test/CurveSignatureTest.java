@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import de.fehrprice.crypto.Ed25519;
+import de.fehrprice.crypto.RandomSeed;
 
 /**
  * test data here: http://ed25519.cr.yp.to/software.html
@@ -180,6 +181,16 @@ d25bf5f0595bbe24655141438e7a100b
 //		System.out.println("public " + publicKey);
 //		System.out.println("message " + messageHexString);
 //		System.out.println("signature " + signatureString);
+	}
+	
+	@Test
+	void testRandom() {
+		byte[] seed = RandomSeed.createSeed();
+		RandomSeed.createSeed();
+		RandomSeed.createSeed();
+		RandomSeed.createSeed();
+		RandomSeed.createSeed();
+		RandomSeed.createSeed();
 	}
 }
 
