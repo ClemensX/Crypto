@@ -68,6 +68,7 @@ public class RSA {
 	private BigInteger getRandomPrimeSingle(int bitcount) {
 		AES aes = new AES();
 		int bytesNeeded = bitcount/8;
+		aes.setSeed(RandomSeed.createSeed());
 		byte[] random = aes.random(bytesNeeded);
 		while (((random[0]&0xff) & 0x80) == 0) {	// we want highest bit set to ensure big enough number
 			random = aes.random(bytesNeeded);

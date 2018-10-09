@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import de.fehrprice.crypto.AES;
 import de.fehrprice.crypto.Conv;
 import de.fehrprice.crypto.Curve25519;
+import de.fehrprice.crypto.RandomSeed;
 
 public class CurveTest {
 	
@@ -151,6 +152,7 @@ public class CurveTest {
 	public void TestEncryptionInvalid() {
 		AES aes = new AES();
 		// first we need a public key: (no need for prime, just a random number):
+		aes.setSeed(RandomSeed.createSeed());
 		byte[] privKeyBytes = aes.random(32);
 		// convert to hex string
 		String privKey = Conv.toString(privKeyBytes);

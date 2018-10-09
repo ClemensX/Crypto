@@ -615,7 +615,7 @@ public class AES {
 	 * Set initial seed used for random number generator.
 	 * @param myseed 32 bytes
 	 */
-	private void setSeed(byte[] myseed) {
+	public void setSeed(byte[] myseed) {
 		if (myseed == null || myseed.length < 32) {
 			throw new NumberFormatException("invalid seed");
 		}
@@ -630,7 +630,8 @@ public class AES {
 	private void randomRun() {
 		if (seed == null) {
 			seed = calculateSeed();
-			logger.warning("This AES uses weak Pseudo Random Numbers. Do not use for serious cryptography!");
+			logger.severe("AES PRNG cannot run without seed!");
+			throw new NumberFormatException("no seed for AES");
 		}
 		byte[] text = new byte[16];
 		byte[] key = new byte[16];
