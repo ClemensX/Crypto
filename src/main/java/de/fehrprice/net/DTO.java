@@ -59,4 +59,11 @@ public class DTO {
 		}
 		return b;
 	}
+
+	public boolean isInitClientCommand() {
+		if (command != null && command.equals("InitClient")) {
+			return true;
+		}
+		return false;
+	}
 }

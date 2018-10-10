@@ -595,12 +595,16 @@ public class AES {
 		return decipher(Conv.toByteArray(key), input, 4, 14, 8);
 	}
 	
-	public byte[] cipher256(String key, String plaintext) {
-		return cipher(Conv.toByteArray(key), Conv.toByteArray(plaintext), 4, 14, 8, null);
+	public byte[] cipher256(String keyHex, byte[] message) {
+		return cipher(Conv.toByteArray(keyHex), message, 4, 14, 8, null);
 	}
 
-	public byte[] cipher128(String key, String plaintext) {
-		return cipher(Conv.toByteArray(key), Conv.toByteArray(plaintext), 4, 10, 4, null);
+	public byte[] cipher256(String keyHex, String plaintextHex) {
+		return cipher(Conv.toByteArray(keyHex), Conv.toByteArray(plaintextHex), 4, 14, 8, null);
+	}
+
+	public byte[] cipher128(String keyHex, String plaintextHex) {
+		return cipher(Conv.toByteArray(keyHex), Conv.toByteArray(plaintextHex), 4, 10, 4, null);
 	}
 
 	/* random numbers

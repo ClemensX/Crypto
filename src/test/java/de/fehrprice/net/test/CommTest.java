@@ -2,11 +2,13 @@ package de.fehrprice.net.test;
 
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.PublicKey;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -17,7 +19,9 @@ import de.fehrprice.crypto.Conv;
 import de.fehrprice.crypto.Curve25519;
 import de.fehrprice.crypto.Ed25519;
 import de.fehrprice.crypto.RandomSeed;
+import de.fehrprice.net.DTO;
 import de.fehrprice.net.ECConnection;
+import de.fehrprice.net.Session;
 
 /**
  * test data here: http://ed25519.cr.yp.to/software.html
@@ -77,10 +81,44 @@ public class CommTest {
 		String alicePublic = ed.publicKey(alicePrivate);
 		String bobPublic = ed.publicKey(bobPrivate);
 		
-		// Alice acts as client and calls bob:
+		// Alice acts as client and calls Bob:
 		ECConnection comm = new ECConnection(x, ed, aes);
-		String message = comm.initiateECDSA(alicePrivate, alicePublic, "Alice");
+		Session aliceSession = new Session();
+		String message = comm.initiateECDSA(aliceSession, alicePrivate, alicePublic, "Alice");
 		System.out.println("transfer message: " + message);
+		
+		// Bob receives the message and verifies:
+		DTO dto = DTO.fromJsonString(message);
+		assertTrue(dto.isInitClientCommand());
+		assertTrue(comm.validateSender(dto, alicePublic));
+		dto.id += "x";
+		assertFalse(comm.validateSender(dto, alicePublic));
+		
+		// Bob answers, after that both client and server can construct the session key for AES
+		Session bobSession = new Session();
+		String initAnswer = comm.answerInitClient(bobSession, dto, bobPrivate, bobPublic);
+		System.out.println("transfer message: " + initAnswer);
+		
+		// Alice receives the server ok message and returns the first AES encrypted block
+		dto = DTO.fromJsonString(initAnswer);
+		assertTrue(comm.validateSender(dto, bobPublic));
+		String sessionKeyAlice = comm.computeSessionKey(aliceSession.sessionPrivateKey, bobSession.sessionPublicKey);
+		aliceSession.sessionAESKey = sessionKeyAlice;
+		
+		// continue with AES
+		String aesMessage = "Niklas ist der Beste!";
+		byte[] encrypted = comm.encryptAES(aliceSession, aesMessage);
+		System.out.println("AES encrypted: " + Conv.toString(encrypted));
+		
+		// Bob receives the block and decrypts:
+		String sessionKeyBob = comm.computeSessionKey(bobSession.sessionPrivateKey, aliceSession.sessionPublicKey);
+		bobSession.sessionAESKey = sessionKeyBob;
+		String decryptedMessage = comm.decryptAES(bobSession, encrypted);
+		System.out.println("decrypted message: " + decryptedMessage);
+		
+		// intermediate: check session keys
+		assertEquals(sessionKeyAlice, sessionKeyBob);
+		
 	}
 }
 

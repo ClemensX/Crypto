@@ -1,6 +1,22 @@
 package de.fehrprice.crypto;
 
+import java.nio.charset.StandardCharsets;
+
 public class Conv {
+	
+	/**
+	 * Convert input String to byte array using UTF_8 charset.
+	 * @param plaintext
+	 * @return
+	 */
+	public static byte[] plaintextToByteArray(String plaintext) {
+		return plaintext.getBytes(StandardCharsets.UTF_8);
+	}
+	
+	public static String toPlaintext(byte[] res_array) {
+		return new String(res_array, StandardCharsets.UTF_8);
+	}
+
 	/**
 	 * Extend byte array to a fixed length by appending zero bytes
 	 * @param finalLength
@@ -89,4 +105,5 @@ public class Conv {
 		}
 		return buf.toString();
 	}
+
 }

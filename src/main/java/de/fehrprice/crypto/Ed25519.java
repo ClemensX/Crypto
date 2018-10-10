@@ -306,7 +306,7 @@ def isoncurve(P):
 		return b.mod(q).equals(BigInteger.ZERO);
 	}
 
-	public boolean checkvalid(String s, String messageString, String publicKeyString) {
+	public boolean checkvalid(String signature, String messageString, String publicKeyString) {
 	/*
 	  if len(s) != b/4: raise Exception("signature length is wrong")
 	  if len(pk) != b/8: raise Exception("public-key length is wrong")
@@ -318,34 +318,34 @@ def isoncurve(P):
 	    raise Exception("signature does not pass verification")
 	 */
 		byte[] m = Conv.toByteArray(messageString);
-		return checkvalid(s, m, publicKeyString);
+		return checkvalid(signature, m, publicKeyString);
 	}
 
-	private boolean checkvalid(String s, byte[] m, String publicKeyString) {
-		if (s.length() != 128) {
+	public boolean checkvalid(String signature, byte[] message, String publicKeyString) {
+		if (signature.length() != 128) {
 			throw new IllegalArgumentException("signature length is wrong");
 		}
 		if (publicKeyString.length() != 64) {
 			throw new IllegalArgumentException("public-key length is wrong");
 		}
 		//System.out.println("decodepoint R " + s.substring(0, 64));
-		BigInteger R[] = decodepoint(s.substring(0, 64));
+		BigInteger R[] = decodepoint(signature.substring(0, 64));
 		BigInteger A[] = decodepoint(publicKeyString);
-		BigInteger S = decodeint(s.substring(64));
+		BigInteger S = decodeint(signature.substring(64));
 		//System.out.println("S = " + S);
 		//print_point(R, "R");
 		//print_point(A, "A");
 		byte[] enc_r = encodepoint_to_array(R);
-		byte[] concat = concat_r_pk_m(enc_r, Conv.toByteArray(publicKeyString), m);
+		byte[] concat = concat_r_pk_m(enc_r, Conv.toByteArray(publicKeyString), message);
 		BigInteger h = h_int(concat);
 		//System.out.println("concat int verify = " + h);
 		BigInteger[] left = scalarmult(B, S);
 		BigInteger[] right = edwards(R, scalarmult(A, h));
 		boolean is_equal = left[0].equals(right[0]) && left[1].equals(right[1]);  
-		if (!is_equal) {
-			throw new IllegalArgumentException("signature does not pass verification");
-		}
-		return true;
+//		if (!is_equal) {
+//			throw new IllegalArgumentException("signature does not pass verification");
+//		}
+		return is_equal;
 	}
 
 	private void print_point(BigInteger[] p, String name) {
