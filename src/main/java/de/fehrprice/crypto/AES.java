@@ -110,6 +110,14 @@ public class AES {
 	private byte[] column_copy = new byte[4];
 	
 	public byte[] cipher(byte[] key, byte[] in, int Nb, int Nr, int Nk, int [] waldi) {
+		if (in.length != 16) {
+			throw new NumberFormatException("AES requires exactly 128 bit input data length");
+		}
+		if (Nk == 8) {
+			// aes 256
+			System.out.println("cipher key " + Conv.toString(key));
+			System.out.println("cipher block " + Conv.toString(in));
+		}
 		byte[] state = new byte[4*Nb];
 		assignToStateFromInput(state, in);
 		//trace("input", in);
@@ -591,22 +599,72 @@ public class AES {
 		return Conv.toString(trans);
 	}
 
-	public byte[] decipher256(String key, byte[]  input) {
+	public byte[] decipher256SingleBlock(byte[] key, byte[]  input) {
+		return decipher(key, input, 4, 14, 8);
+	}
+	
+	public byte[] decipher256SingleBlock(String key, byte[]  input) {
 		return decipher(Conv.toByteArray(key), input, 4, 14, 8);
 	}
 	
-	public byte[] cipher256(String keyHex, byte[] message) {
+	public byte[] cipher256SingleBlock(byte[] key, byte[] message) {
+		return cipher(key, message, 4, 14, 8, null);
+	}
+
+	public byte[] cipher256SingleBlock(String keyHex, byte[] message) {
 		return cipher(Conv.toByteArray(keyHex), message, 4, 14, 8, null);
 	}
 
-	public byte[] cipher256(String keyHex, String plaintextHex) {
+	public byte[] cipher256SingleBlock(String keyHex, String plaintextHex) {
 		return cipher(Conv.toByteArray(keyHex), Conv.toByteArray(plaintextHex), 4, 14, 8, null);
 	}
 
-	public byte[] cipher128(String keyHex, String plaintextHex) {
+	public byte[] cipher128SingleBlock(String keyHex, String plaintextHex) {
 		return cipher(Conv.toByteArray(keyHex), Conv.toByteArray(plaintextHex), 4, 10, 4, null);
 	}
 
+	private byte[] cipher256SingleBlockWithNumbering(byte[] key, byte[] block, int i) {
+		return cipher256SingleBlock(key, block);
+	}
+
+	/**
+	 * Encrypt message. Breaks input up to 16 byte chunks and encrypts them with ASE-256.
+	 * Last byte of last block contain number of null bytes added to end of message.
+	 * Each input block will have its block number added (beginning with 0 for first block)
+	 * to prevent same input blocks to yield same cypher text.  
+	 * @param key
+	 * @param message
+	 * @return cypher text, length is multiple of 16
+	 */
+	public byte[] cipher256(byte[] key, byte[] message) {
+		int messageLength = message.length;
+		// calc how many full blocks we have:
+		int fullBlocks = messageLength / 16;
+		int messageLengthInLastBlock = messageLength % 16;
+		int targetBlocks = fullBlocks;
+		// messageLengthInLastBlock < 15, otherwise we would have one more full block
+		targetBlocks++; // add one for final block
+		byte[] target = new byte[targetBlocks * 16];
+		byte[] block = new byte[16];
+		for (int i = 0; i < fullBlocks; i++) {
+			System.arraycopy(message, i*16, block, 0, 16);
+			byte[] crypt = cipher256SingleBlockWithNumbering(key, block, i);
+			System.arraycopy(crypt, 0, target, i*16, 16);
+		}
+		// handle last block:
+		System.arraycopy(message, fullBlocks * 16, block, 0, messageLengthInLastBlock);
+		// fill last block with 0
+		for (int i = messageLengthInLastBlock; i < 15; i++) {
+			block[i] = 0;
+		}
+		// set number of bytes to discard in last byte of final buffer:
+		int discard = 16-messageLengthInLastBlock;
+		block[15] = (byte) discard;
+		byte[] crypt = cipher256SingleBlockWithNumbering(key, block, targetBlocks);
+		System.arraycopy(crypt, 0, target, fullBlocks*16, 16);
+		return target;
+	}
+	
 	/* random numbers
 	 * based on 256 bit/32 byte seeds that are used as key and plaintext for aes128.
 	 * each aes128 call generates more 128 bits/16 bytes random numbers that are used as next plaintext  

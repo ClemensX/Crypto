@@ -104,9 +104,11 @@ public class CommTest {
 		assertTrue(comm.validateSender(dto, bobPublic));
 		String sessionKeyAlice = comm.computeSessionKey(aliceSession.sessionPrivateKey, bobSession.sessionPublicKey);
 		aliceSession.sessionAESKey = sessionKeyAlice;
+		System.out.println("session key: " + sessionKeyAlice);
 		
 		// continue with AES
-		String aesMessage = "Niklas ist der Beste!";
+		String aesMessage = "Niklas ist der B";
+		//String aesMessage = "Niklas";
 		byte[] encrypted = comm.encryptAES(aliceSession, aesMessage);
 		System.out.println("AES encrypted: " + Conv.toString(encrypted));
 		

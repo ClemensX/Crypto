@@ -98,11 +98,11 @@ public class ECConnection {
 	}
 
 	public byte[] encryptAES(Session clientSession, String messageText) {
-		return aes.cipher256(clientSession.sessionAESKey, Conv.plaintextToByteArray(messageText));
+		return aes.cipher256SingleBlock(clientSession.sessionAESKey, Conv.plaintextToByteArray(messageText));
 	}
 
 	public String decryptAES(Session session, byte[] encrypted) {
-		byte[] res_array = aes.decipher256(session.sessionAESKey, encrypted);
+		byte[] res_array = aes.decipher256SingleBlock(session.sessionAESKey, encrypted);
 		//return Conv.toPlaintext(res_array);
 		String hex = aes.toStringTransposed(res_array);
 		return Conv.toPlaintext(Conv.toByteArray(hex));
