@@ -113,11 +113,11 @@ public class AES {
 		if (in.length != 16) {
 			throw new NumberFormatException("AES requires exactly 128 bit input data length");
 		}
-		if (Nk == 8) {
-			// aes 256
-			System.out.println("cipher key " + Conv.toString(key));
-			System.out.println("cipher block " + Conv.toString(in));
-		}
+//		if (Nk == 8) {
+//			// aes 256
+//			System.out.println("cipher key " + Conv.toString(key));
+//			System.out.println("cipher block " + Conv.toString(in));
+//		}
 		byte[] state = new byte[4*Nb];
 		assignToStateFromInput(state, in);
 		//trace("input", in);
@@ -623,12 +623,27 @@ public class AES {
 		return cipher(Conv.toByteArray(keyHex), Conv.toByteArray(plaintextHex), 4, 10, 4, null);
 	}
 
+	/**
+	 * Code the block number into the first 4 bytes.
+	 * 4 bytes are interpreted as little 
+	 * @param key
+	 * @param block
+	 * @param i
+	 * @return
+	 */
 	private byte[] cipher256SingleBlockWithNumbering(byte[] key, byte[] block, int i) {
+		long block_value = Conv.bytesToUnsignedLong(block);
+		block_value += i;
+		Conv.UnsingedLongToByteArray(block_value, block);
 		return cipher256SingleBlock(key, block);
 	}
 
 	private byte[] decipher256SingleBlockWithNumbering(byte[] key, byte[] block, int i) {
-		return decipher256SingleBlock(key, block);
+		byte[] dec = decipher256SingleBlock(key, block);
+		long dec_value = Conv.bytesToUnsignedLong(dec);
+		dec_value -= i;
+		Conv.UnsingedLongToByteArray(dec_value, dec);
+		return dec;
 	}
 
 	/**

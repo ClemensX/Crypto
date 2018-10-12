@@ -94,7 +94,7 @@ public class Conv {
 
 	/**
 	 * Format byte array as Hex String - on byte yields 2 chars.
-	 * Big Endian order: First byte will be firts 2 chars of String
+	 * Big Endian order: First byte will be first 2 chars of String
 	 * @param bytes
 	 * @return
 	 */
@@ -106,4 +106,31 @@ public class Conv {
 		return buf.toString();
 	}
 
+	/**Convert the first 8 bytes of block to an unsigned long.
+	 * Big Endian order: first byte in array will contribute highest byte
+	 * @param block
+	 * @return
+	 */
+	public static long bytesToUnsignedLong(byte[] b) {
+		long l = ((long) b[0] << 56)
+	       | ((long) b[1] & 0xff) << 48
+	       | ((long) b[2] & 0xff) << 40
+	       | ((long) b[3] & 0xff) << 32
+	       | ((long) b[4] & 0xff) << 24
+	       | ((long) b[5] & 0xff) << 16
+	       | ((long) b[6] & 0xff) << 8
+	       | ((long) b[7] & 0xff);
+		return l;
+	}
+
+	public static void UnsingedLongToByteArray(long l, byte[] b) {
+		b[0] = (byte) (l>>>56);
+		b[1] = (byte) (l>>>48);
+		b[2] = (byte) (l>>>40);
+		b[3] = (byte) (l>>>32);
+		b[4] = (byte) (l>>>24);
+		b[5] = (byte) (l>>>16);
+		b[6] = (byte) (l>>>8);
+		b[7] = (byte) (l);
+	}
 }

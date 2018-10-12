@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Random;
 import java.util.regex.Pattern;
 
 import org.junit.jupiter.api.Test;
@@ -127,7 +128,28 @@ public class CryptoTest {
 	}
 
 	@Test
-	public void testFullMessageAES() {
+	public void testLongByteConversion () {
+		byte[] k =  Conv.toByteArray("00000000000000000000000000000001");
+		long l = Conv.bytesToUnsignedLong(k);
+		assertEquals(0L, l);
+		k =  Conv.toByteArray("00000000000000020000000000000001");
+		l = Conv.bytesToUnsignedLong(k);
+		assertEquals(2L, l);
+		k =  Conv.toByteArray("ffffffffffffffff0000000000000001");
+		l = Conv.bytesToUnsignedLong(k);
+		assertEquals(0, Long.compareUnsigned(0xffffffffffffffffL, l));
+		assertEquals(0xffffffffffffffffL, l);
+		Conv.UnsingedLongToByteArray(0xfeL, k);
+		l = Conv.bytesToUnsignedLong(k);
+		assertEquals(254L, l);
+		l -= 2;
+		Conv.UnsingedLongToByteArray(l, k);
+		l = Conv.bytesToUnsignedLong(k);
+		assertEquals(252L, l);
+	}
+	
+	@Test
+	public void testAESFullMessage() {
 		AES aes = new AES();
 		
 		byte[] key2 = Conv.toByteArray("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
@@ -139,6 +161,26 @@ public class CryptoTest {
 		System.out.println("cipher: " + Conv.toString(enc));
 		byte[] dec = aes.decipher256(key, enc);
 		assertArrayEquals(m, dec);
+	}
+
+	// create random byte buffer and check encryption/decryption
+	@Test
+	public void testAESRandomMessage() {
+		AES aes = new AES();
+		Random random = new Random();
+		int runs = 200;
+		for (int i = 0; i < runs; i++) {
+			// input message length: between 0 and 15000
+			int len = random.nextInt(15000);
+			byte[] message = new byte[len];
+			random.nextBytes(message);
+			//System.out.println("msg: " + Conv.toString(message));
+			byte[] key = Conv.toByteArray("4cad16ec5f116c449accc58f4c44f28ac921f502471e387fdcd4f493b115af2d");
+			byte[] enc = aes.cipher256(key, message);
+			byte[] dec = aes.decipher256(key, enc);
+			assertArrayEquals(message, dec);
+		}
+		
 	}
 
 	@Test
