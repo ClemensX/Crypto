@@ -113,7 +113,6 @@ public class CryptoTest {
 		String key_string = Conv.toString(key256);
 		byte[] dec = aes.decipher256SingleBlock(key_string, res256);
 		System.out.println("AES decypher: " + Conv.toString(dec));
-		System.out.println("AES decypher: " + aes.toStringTransposed(dec));
 
 		// assertEquals("8ea2b7ca516745bfeafc49904b496089",
 		// aes.toStringTransposed(res256));
@@ -133,9 +132,13 @@ public class CryptoTest {
 		
 		byte[] key2 = Conv.toByteArray("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f");
 		byte[] key =  Conv.toByteArray("4cad16ec5f116c449accc58f4c44f28ac921f502471e387fdcd4f493b115af2d");
-		byte[] m = "Niklas ist der".getBytes(StandardCharsets.UTF_8);
+		byte[] m = "Niklas ist der Beste!".getBytes(StandardCharsets.UTF_8);
+		//byte[] m = "Niklas ist der".getBytes(StandardCharsets.UTF_8);
+		//byte[] m = "abcdefghijklmnop".getBytes(StandardCharsets.UTF_8);
 		byte[] enc =  aes.cipher256(key, m);
 		System.out.println("cipher: " + Conv.toString(enc));
+		byte[] dec = aes.decipher256(key, enc);
+		assertArrayEquals(m, dec);
 	}
 
 	@Test

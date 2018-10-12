@@ -168,7 +168,7 @@ public class AES {
 		invSubBytes(state);
 		//trace("s_box", state);
 		addRoundKey(state, w, 0, Nb-1);
-		assignToOutputFromState(state);
+		state = reorderStateToOutput(state);
 		//trace("resul", state);
 		return state;
 	}
@@ -472,7 +472,7 @@ public class AES {
 		}
 	}
 
-	private void assignToOutputFromState(byte[] state) {
+	private byte[] reorderStateToOutput(byte[] state) {
 		byte[] out = new byte[state.length];
 		//System.arraycopy(in, 0, state, 0, in.length);
 		for (int i = 0; i < 4; i++) {
@@ -481,7 +481,7 @@ public class AES {
 			out[8+i] = state[i*4+2];
 			out[12+i] = state[i*4+3];
 		}
-		state = out;
+		return out;
 	}
 
 	public void setKey(byte[] key) {
@@ -627,6 +627,10 @@ public class AES {
 		return cipher256SingleBlock(key, block);
 	}
 
+	private byte[] decipher256SingleBlockWithNumbering(byte[] key, byte[] block, int i) {
+		return decipher256SingleBlock(key, block);
+	}
+
 	/**
 	 * Encrypt message. Breaks input up to 16 byte chunks and encrypts them with ASE-256.
 	 * Last byte of last block contain number of null bytes added to end of message.
@@ -660,11 +664,37 @@ public class AES {
 		// set number of bytes to discard in last byte of final buffer:
 		int discard = 16-messageLengthInLastBlock;
 		block[15] = (byte) discard;
-		byte[] crypt = cipher256SingleBlockWithNumbering(key, block, targetBlocks);
+		byte[] crypt = cipher256SingleBlockWithNumbering(key, block, targetBlocks-1);
 		System.arraycopy(crypt, 0, target, fullBlocks*16, 16);
 		return target;
 	}
 	
+	public byte[] decipher256(byte[] key, byte[] enc) {
+		if (enc.length % 16 != 0) {
+			throw new NumberFormatException("decipher input not blocked (must be mutliple of 16 bytes");
+		}
+		int inputBlocks = enc.length / 16;
+		byte[] block = new byte[16];
+		System.arraycopy(enc, (inputBlocks-1)*16, block, 0, 16);
+		byte[] decryptedLastBlock = decipher256SingleBlockWithNumbering(key, block, inputBlocks - 1);
+		// we have to decipher last block first, to get the message length:
+		// used bytes of last block are in last byte:
+		byte last_byte = decryptedLastBlock[15];
+		int messageLengthInLastBlock = 16 - ((int) last_byte);
+		int messageLength = (inputBlocks-1) * 16 + messageLengthInLastBlock;
+		// allocate decipher buffer for full message:
+		byte[] target = new byte[messageLength]; 
+		// decipher all blocks except the last one:
+		for ( int i = 0; i < (inputBlocks-1); i++) {
+			System.arraycopy(enc, i*16, block, 0, 16);
+			byte[] decrypt = decipher256SingleBlockWithNumbering(key, block, i);
+			System.arraycopy(decrypt, 0, target, i*16, 16);
+		}
+		// handle last block:
+		System.arraycopy(decryptedLastBlock, 0, target, (inputBlocks-1)*16, messageLengthInLastBlock);
+		return target;
+	}
+
 	/* random numbers
 	 * based on 256 bit/32 byte seeds that are used as key and plaintext for aes128.
 	 * each aes128 call generates more 128 bits/16 bytes random numbers that are used as next plaintext  
