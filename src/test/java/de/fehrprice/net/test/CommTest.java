@@ -94,7 +94,7 @@ public class CommTest {
 		dto.id += "x";
 		assertFalse(comm.validateSender(dto, alicePublic));
 		
-		// Bob answers, after that both client and server can construct the session key for AES
+		// Bob answers, after that both client and server are able to construct the session key for AES
 		Session bobSession = new Session();
 		String initAnswer = comm.answerInitClient(bobSession, dto, bobPrivate, bobPublic);
 		System.out.println("transfer message: " + initAnswer);
@@ -106,8 +106,8 @@ public class CommTest {
 		aliceSession.sessionAESKey = sessionKeyAlice;
 		System.out.println("session key: " + sessionKeyAlice);
 		
-		// continue with AES
-		String aesMessage = "Niklas ist der B";
+		// continue with AES: Alice sends message to Bob
+		String aesMessage = "Niklas ist der Beste!";
 		//String aesMessage = "Niklas";
 		byte[] encrypted = comm.encryptAES(aliceSession, aesMessage);
 		System.out.println("AES encrypted: " + Conv.toString(encrypted));
@@ -116,11 +116,20 @@ public class CommTest {
 		String sessionKeyBob = comm.computeSessionKey(bobSession.sessionPrivateKey, aliceSession.sessionPublicKey);
 		bobSession.sessionAESKey = sessionKeyBob;
 		String decryptedMessage = comm.decryptAES(bobSession, encrypted);
-		System.out.println("decrypted message: " + decryptedMessage);
+		System.out.println("decrypted message received by Bob: " + decryptedMessage);
+		assertEquals(aesMessage, decryptedMessage);
 		
 		// intermediate: check session keys
 		assertEquals(sessionKeyAlice, sessionKeyBob);
+	
+		// Bob answers:
+		String answer = "You have spoken the truth!";
+		encrypted = comm.encryptAES(bobSession, answer);
 		
+		// Alice receives answer:
+		decryptedMessage = comm.decryptAES(aliceSession, encrypted);
+		System.out.println("decrypted message received by Alice: " + decryptedMessage);
+		assertEquals(answer, decryptedMessage);
 	}
 }
 
