@@ -131,5 +131,13 @@ public class CommTest {
 		System.out.println("decrypted message received by Alice: " + decryptedMessage);
 		assertEquals(answer, decryptedMessage);
 	}
+	
+	// execute ECDSA test multiple times for performance analysis
+	//@Test
+	void multiECDSATest() {
+		for ( int i = 0; i < 1000; i++) {
+			testECDSA();
+		}
+	}
 }
 
