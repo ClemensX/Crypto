@@ -70,4 +70,4 @@ AES-256 is only defined for complete blocks of 16 bytes. To exchange arbitrary l
  * The very last byte of the last decrypted block always contains the number of bytes that should be discarded from the last 16-byte block. A ten byte message will have the value 6 in the last byte so that the receiver can cut the message to the exact size of ten.
  * When encrypting multiple blocks the same input block would result in the same output block. This would allow an attacker to gain some knowledge of the unencrypted input: He would know where in the input are the same blocks of 16 specific bytes. An attacker should not be able to gain such knowledge, so for every block its sequential number within the message will be added to the first half of the message before encrypting. This is reversed on the receiving side.
 
-The above modifications are done transparantly in the background by our AES implementation.
+The above modifications are done transparently in the background by our AES implementation.

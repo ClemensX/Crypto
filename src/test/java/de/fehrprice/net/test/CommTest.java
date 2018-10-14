@@ -139,5 +139,10 @@ public class CommTest {
 			testECDSA();
 		}
 	}
+	
+	@Test
+	void clientServerTest() {
+		//Http
+	}
 }
 
