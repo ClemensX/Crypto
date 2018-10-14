@@ -7,6 +7,18 @@ We tried to keep dependencies to a minimum. This is what we need:
  * JUnit 5 for test cases
  * log4j for logging
 
+## Build
+ * First build the crypto project with a regular `mvn clean install`
+ * Then add dependency to the crypto lib in the pom.xml of the project where you want to use crypto functions:
+```
+		<dependency>
+			<groupId>de.fehrprice</groupId>
+			<artifactId>crypto</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+
+```
+
 ## Procedures
 
 ### Secure Communication
@@ -52,10 +64,10 @@ Goal: Agree on a secret AES-256 session key that will be used to encrypt all fur
 
 Any message can be securely exchanged after key agreement via open channels. The AES-256 protocol prevents anyone in the outside world from reading the messages. However, DOS attacks (denial of service) are still possible. It is up to the receiver of any AES encrypted message to reject messages:
  * Message too large: Depending on scenario messages exceeding a certain size may be rejected *before* decrypting.
- * Invalid content: Third parties can send garbage messages, but without the AES sesion key they cannot produce meaningful messages. Any message not having the expected format should be rejected.
+ * Invalid content: Third parties can send garbage messages, but without the AES session key they cannot produce meaningful messages. Any message not having the expected format should be rejected.
  
 AES-256 is only defined for complete blocks of 16 bytes. To exchange arbitrary length messages these modifications have been made:
- * The very last byte of the last decrypted block always contains the number of bytes that should be dicarded from the last 16-byte block. A ten byte message will have the value 6 in the last byte so that the receiver can cut the message to the exact size of ten.
+ * The very last byte of the last decrypted block always contains the number of bytes that should be discarded from the last 16-byte block. A ten byte message will have the value 6 in the last byte so that the receiver can cut the message to the exact size of ten.
  * When encrypting multiple blocks the same input block would result in the same output block. This would allow an attacker to gain some knowledge of the unencrypted input: He would know where in the input are the same blocks of 16 specific bytes. An attacker should not be able to gain such knowledge, so for every block its sequential number within the message will be added to the first half of the message before encrypting. This is reversed on the receiving side.
 
 The above modifications are done transparantly in the background by our AES implementation.
