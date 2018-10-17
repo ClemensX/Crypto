@@ -1,6 +1,7 @@
 package de.fehrprice.net.test;
 
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -102,7 +103,7 @@ public class CommTest {
 		// Alice receives the server ok message and returns the first AES encrypted block
 		dto = DTO.fromJsonString(initAnswer);
 		assertTrue(comm.validateSender(dto, bobPublic));
-		String sessionKeyAlice = comm.computeSessionKey(aliceSession.sessionPrivateKey, bobSession.sessionPublicKey);
+		byte[] sessionKeyAlice = comm.computeSessionKey(aliceSession.sessionPrivateKey, bobSession.sessionPublicKey);
 		aliceSession.sessionAESKey = sessionKeyAlice;
 		System.out.println("session key: " + sessionKeyAlice);
 		
@@ -113,14 +114,14 @@ public class CommTest {
 		System.out.println("AES encrypted: " + Conv.toString(encrypted));
 		
 		// Bob receives the block and decrypts:
-		String sessionKeyBob = comm.computeSessionKey(bobSession.sessionPrivateKey, aliceSession.sessionPublicKey);
+		byte[] sessionKeyBob = comm.computeSessionKey(bobSession.sessionPrivateKey, aliceSession.sessionPublicKey);
 		bobSession.sessionAESKey = sessionKeyBob;
 		String decryptedMessage = comm.decryptAES(bobSession, encrypted);
 		System.out.println("decrypted message received by Bob: " + decryptedMessage);
 		assertEquals(aesMessage, decryptedMessage);
 		
 		// intermediate: check session keys
-		assertEquals(sessionKeyAlice, sessionKeyBob);
+		assertArrayEquals(sessionKeyAlice, sessionKeyBob);
 	
 		// Bob answers:
 		String answer = "You have spoken the truth!";

@@ -1,7 +1,5 @@
 package de.fehrprice.net;
 
-import java.util.function.BooleanSupplier;
-
 import de.fehrprice.crypto.AES;
 import de.fehrprice.crypto.Conv;
 import de.fehrprice.crypto.Curve25519;
@@ -54,14 +52,19 @@ public class ECConnection {
 		dto.id = clientName;
 		dto.key = sessionClientPublicKey;
 		dto.signature = ed.signature(dto.getMessage(), staticClientPrivateKey, staticClientPublicKey);
-		clientSession.sessionPrivateKey = sessionClientPrivateKey;
-		clientSession.sessionPublicKey = sessionClientPublicKey;
+		clientSession.sessionPrivateKey = Conv.toByteArray(sessionClientPrivateKey);
+		clientSession.sessionPublicKey = Conv.toByteArray(sessionClientPublicKey);
 		return DTO.asJson(dto);
 	}
 
 	public String computeSessionKey(String myPrivateKey, String partnerPublicKey) {
 		String sharedSecret = x.x25519(myPrivateKey, partnerPublicKey);
 		return sharedSecret;
+	}
+
+	public byte[] computeSessionKey(byte[] myPrivateKey, byte[] partnerPublicKey) {
+		String sharedSecret = x.x25519(Conv.toString(myPrivateKey), Conv.toString(partnerPublicKey));
+		return Conv.toByteArray(sharedSecret);
 	}
 
 	/**
@@ -82,8 +85,8 @@ public class ECConnection {
 		dto.id = "Server";
 		dto.key = sessionServerPublicKey;
 		dto.signature = ed.signature(dto.getMessage(), staticServerPrivateKey, staticServerPublicKey);
-		serverSession.sessionPrivateKey = sessionServerPrivateKey;
-		serverSession.sessionPublicKey = sessionServerPublicKey;
+		serverSession.sessionPrivateKey = Conv.toByteArray(sessionServerPrivateKey);
+		serverSession.sessionPublicKey = Conv.toByteArray(sessionServerPublicKey);
 		return DTO.asJson(dto);
 	}
 
@@ -98,11 +101,11 @@ public class ECConnection {
 	}
 
 	public byte[] encryptAES(Session clientSession, String messageText) {
-		return aes.cipher256(Conv.toByteArray(clientSession.sessionAESKey), Conv.plaintextToByteArray(messageText));
+		return aes.cipher256(clientSession.sessionAESKey, Conv.plaintextToByteArray(messageText));
 	}
 
 	public String decryptAES(Session session, byte[] encrypted) {
-		byte[] res_array = aes.decipher256(Conv.toByteArray(session.sessionAESKey), encrypted);
+		byte[] res_array = aes.decipher256(session.sessionAESKey, encrypted);
 		return Conv.toPlaintext(res_array);
 	}
 
