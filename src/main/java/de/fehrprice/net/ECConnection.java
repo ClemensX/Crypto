@@ -122,9 +122,17 @@ public class ECConnection {
 		}
 		byte[] aesblock = encryptAES(session, input);
 		byte[] result = new byte[idblock.length + aesblock.length + 1];
-		result[0] = (byte) idblock.length;
+		result[0] = Conv.intToByte(idblock.length);
 		System.arraycopy(idblock, 0, result, 1, idblock.length);
-		System.arraycopy(aesblock, 0, result, idblock.length, aesblock.length);
+		System.arraycopy(aesblock, 0, result, idblock.length+1, aesblock.length);
 		return result;
+	}
+	
+	public static String getSenderIdFromAESMessage(byte[] aesMsg) {
+		int len = Conv.byteToInt(aesMsg[0]);
+		byte namearr[] = new byte[len];
+		System.arraycopy(aesMsg, 1, namearr, 0, len);
+		String name = Conv.toPlaintext(namearr);
+		return name;
 	}
 }

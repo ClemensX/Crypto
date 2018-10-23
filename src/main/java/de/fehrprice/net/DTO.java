@@ -3,6 +3,7 @@ package de.fehrprice.net;
 import java.io.StringReader;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.util.logging.Logger;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -15,6 +16,9 @@ import de.fehrprice.crypto.Conv;
  *
  */
 public class DTO {
+
+	private static Logger logger = Logger.getLogger(DTO.class.toString());
+
 	public String command;
 	public String id;
 	public String key;
@@ -34,6 +38,7 @@ public class DTO {
 	}
 
 	public static DTO fromJsonString(String json)  {
+		//logger.severe("DTO PARSING: " + json);
 		JsonReader reader = Json.createReader(new StringReader(json));
 		JsonObject jobj = reader.readObject();
 		DTO dto = new DTO();
