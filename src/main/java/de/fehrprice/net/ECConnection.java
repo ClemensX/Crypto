@@ -135,4 +135,14 @@ public class ECConnection {
 		String name = Conv.toPlaintext(namearr);
 		return name;
 	}
+
+	public String getTextFromAESMessage(byte[] aesMsg, Session session) {
+		int len = Conv.byteToInt(aesMsg[0]);
+		int aesTextLength = aesMsg.length - len - 1;
+		byte textarr[] = new byte[aesTextLength];
+		System.arraycopy(aesMsg, 1 + len, textarr, 0, aesTextLength);
+		String text = decryptAES(session, textarr);
+		//String text = Conv.toPlaintext(textarr);
+		return text;
+	}
 }
