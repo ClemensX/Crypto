@@ -133,4 +133,12 @@ public class Conv {
 		b[6] = (byte) (l>>>8);
 		b[7] = (byte) (l);
 	}
+	
+	public static int byteToInt(byte b) {
+		return ((int) b & 0xff);
+	}
+	
+	public static byte intToByte(int i) {
+		return (byte) (i);
+	}
 }

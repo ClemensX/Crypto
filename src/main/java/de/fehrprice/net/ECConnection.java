@@ -82,7 +82,7 @@ public class ECConnection {
 		String sessionServerPrivateKey = Conv.toString(aes.random(32));
 		String sessionServerPublicKey = x.x25519(sessionServerPrivateKey, uBasePoint);
 		dto.command = "InitServer";
-		dto.id = "Server";
+		dto.id = "SecretsServer";
 		dto.key = sessionServerPublicKey;
 		dto.signature = ed.signature(dto.getMessage(), staticServerPrivateKey, staticServerPublicKey);
 		serverSession.sessionPrivateKey = Conv.toByteArray(sessionServerPrivateKey);
@@ -109,4 +109,40 @@ public class ECConnection {
 		return Conv.toPlaintext(res_array);
 	}
 
+	// secure message exchange
+	// simple format: byte with length (in bytes) of id string (in plain text) followed by aes encrypted block
+	
+	public byte[] createAESMessage(DTO dto, Session session, String input) {
+		if (dto.id == null || dto.id.length() > 255) {
+			throw new IndexOutOfBoundsException("invalid sender id: " + dto.id);
+		}
+		byte[] idblock = Conv.plaintextToByteArray(dto.id);
+		if (idblock.length > 255) {
+			throw new IndexOutOfBoundsException("invalid sender, could not code name into 255 bytes: " + dto.id);
+		}
+		byte[] aesblock = encryptAES(session, input);
+		byte[] result = new byte[idblock.length + aesblock.length + 1];
+		result[0] = Conv.intToByte(idblock.length);
+		System.arraycopy(idblock, 0, result, 1, idblock.length);
+		System.arraycopy(aesblock, 0, result, idblock.length+1, aesblock.length);
+		return result;
+	}
+	
+	public static String getSenderIdFromAESMessage(byte[] aesMsg) {
+		int len = Conv.byteToInt(aesMsg[0]);
+		byte namearr[] = new byte[len];
+		System.arraycopy(aesMsg, 1, namearr, 0, len);
+		String name = Conv.toPlaintext(namearr);
+		return name;
+	}
+
+	public String getTextFromAESMessage(byte[] aesMsg, Session session) {
+		int len = Conv.byteToInt(aesMsg[0]);
+		int aesTextLength = aesMsg.length - len - 1;
+		byte textarr[] = new byte[aesTextLength];
+		System.arraycopy(aesMsg, 1 + len, textarr, 0, aesTextLength);
+		String text = decryptAES(session, textarr);
+		//String text = Conv.toPlaintext(textarr);
+		return text;
+	}
 }
