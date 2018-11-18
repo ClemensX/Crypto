@@ -141,4 +141,33 @@ public class Conv {
 	public static byte intToByte(int i) {
 		return (byte) (i);
 	}
+
+	public static boolean testEntropy(String keyCandidate) {
+		return testEntropy(keyCandidate, 32);
+	}
+	
+	public static boolean testEntropy(String keyCandidate, int lengthInBytes) {
+		try {
+			byte[] key = Conv.toByteArray(keyCandidate);
+			if (key.length != 32) return false;
+			// count set bits:
+			int count1 = 0;
+			int count0 = 0;
+			for (int i = 0; i < key.length; i++) {
+				byte b = key[i];
+				int v = ((int) b & 0xff);
+				int c = Integer.bitCount(v);
+				count1 += c;
+			}
+			int totalbits = 8*lengthInBytes;
+			count0 = totalbits - count1;
+			// we do not accept disparity of 1/3 or more:
+			if (count0 * 3 < totalbits || count1 * 3 < totalbits) {
+				return false;
+			}
+		} catch (Throwable t) {
+			return false;
+		}
+		return true;
+	}
 }
