@@ -28,11 +28,11 @@ public class DTO {
 	// InitClient / Alice / ffccee... / aabbcc44..
 	
 	public static String asJson(DTO dto)  {
-		JsonObject json = Json.createObjectBuilder()
-			     .add("command", dto.command)
-			     .add("id", dto.id)
-			     .add("key", dto.key)
-			     .add("signature", dto.signature).build();
+		var builder = Json.createObjectBuilder().add("command", dto.command);
+		if (dto.id != null) builder.add("id", dto.id);
+		if (dto.key != null) builder.add("key", dto.key);
+		if (dto.signature != null) builder.add("signature", dto.signature);
+		JsonObject json = builder.build();
 		String result = json.toString();
 		return result;
 	}
@@ -41,6 +41,12 @@ public class DTO {
 		//logger.severe("DTO PARSING: " + json);
 		JsonReader reader = Json.createReader(new StringReader(json));
 		JsonObject jobj = reader.readObject();
+		DTO dto = fromJsonObject(jobj);
+		return dto;
+	}
+
+	public static DTO fromJsonObject(JsonObject jobj)  {
+		//logger.severe("DTO PARSING: " + json);
 		DTO dto = new DTO();
 		dto.command = jobj.getString("command", null);
 		dto.id = jobj.getString("id", null);
@@ -67,6 +73,13 @@ public class DTO {
 
 	public boolean isInitClientCommand() {
 		if (command != null && command.equals("InitClient")) {
+			return true;
+		}
+		return false;
+	}
+
+	public boolean isGetIdCommand() {
+		if (command != null && command.equals("getid")) {
 			return true;
 		}
 		return false;

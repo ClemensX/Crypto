@@ -57,6 +57,15 @@ public class ECConnection {
 		return DTO.asJson(dto);
 	}
 
+	public String createOpenSignedCommand(Session clientSession, String staticClientPrivateKey, String staticClientPublicKey, String commandName) {
+		DTO dto = new DTO();
+		dto.command = commandName;
+		dto.id = null;
+		dto.key = staticClientPublicKey;
+		dto.signature = ed.signature(dto.getMessage(), staticClientPrivateKey, staticClientPublicKey);
+		return DTO.asJson(dto);
+	}
+
 	public String computeSessionKey(String myPrivateKey, String partnerPublicKey) {
 		String sharedSecret = x.x25519(myPrivateKey, partnerPublicKey);
 		return sharedSecret;
