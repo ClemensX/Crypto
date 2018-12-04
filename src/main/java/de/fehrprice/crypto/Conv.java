@@ -170,4 +170,12 @@ public class Conv {
 		}
 		return true;
 	}
+
+	public static void dump(byte[] array, int num) {
+		System.out.print("dump array " + num + " of " + array.length + ": ");
+		for (int i = 0 ; i < num; i++) {
+			System.out.print("" + Conv.byteToInt(array[i]) + " ");
+		}
+		System.out.println();
+	}
 }
