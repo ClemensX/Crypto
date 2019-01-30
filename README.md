@@ -9,6 +9,7 @@ We tried to keep dependencies to a minimum. This is what we need:
 
 ## Build
  * First build the crypto project with a regular `mvn clean install`
+ * fix linux extremely slow tests during build: mvn clean install -Dtest=Base64Test
  * Then add dependency to the crypto lib in the pom.xml of the project where you want to use crypto functions:
 ```
 		<dependency>
