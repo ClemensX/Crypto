@@ -1,4 +1,4 @@
-package de.fehrprice.net.test;
+package de.fehrprice.crypto.test;
 
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
