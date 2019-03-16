@@ -94,6 +94,12 @@
 									<outputDirectory>${project.build.directory}</outputDirectory>
 								</artifactItem>
 								<artifactItem>
+									<groupId>org.junit.jupiter</groupId>
+									<artifactId>junit-jupiter-api</artifactId>
+									<overWrite>false</overWrite>
+									<outputDirectory>${project.build.directory}</outputDirectory>
+								</artifactItem>
+								<artifactItem>
 									<groupId>org.glassfish</groupId>
 									<artifactId>javax.json</artifactId>
 									<overWrite>false</overWrite>
